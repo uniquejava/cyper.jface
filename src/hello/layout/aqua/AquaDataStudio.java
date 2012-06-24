@@ -4,8 +4,10 @@ import static hello.layout.aqua.ImageFactory.LOGO;
 import static hello.layout.aqua.ImageFactory.SCRIPT;
 import static hello.layout.aqua.ImageFactory.SERVER;
 import static hello.layout.aqua.util.GridDataFactory.gd4text;
+import hello.layout.aqua.action.CommitSQLAction;
 import hello.layout.aqua.action.ExecuteSQLAction;
 import hello.layout.aqua.action.RegisterServerAction;
+import hello.layout.aqua.action.RollbackSQLAction;
 import hello.layout.aqua.dialog.SQLWindow;
 import hello.layout.aqua.scriptsView.ScriptsTreeContentProvider;
 import hello.layout.aqua.scriptsView.ScriptsTreeLabelProvider;
@@ -195,6 +197,8 @@ public class AquaDataStudio {
 		ToolBarManager manager = new ToolBarManager(toolbar);
 		manager.add(new RegisterServerAction(shell));
 		manager.add(new ExecuteSQLAction(this));
+		manager.add(new CommitSQLAction(this));
+		manager.add(new RollbackSQLAction(this));
 		
 		
 		

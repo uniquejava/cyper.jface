@@ -39,8 +39,8 @@ public class ExecuteSQLAction extends Action {
 		//show result
 		CTabItem item = studio.tabFolder.getSelection();
 		if (item!=null) {
-			TableViewer tv = (TableViewer) item.getData("tv");
-			tv.setInput(PersonFactory.createPersons(10));
+//			TableViewer tv = (TableViewer) item.getData("tv");
+//			tv.setInput(PersonFactory.createPersons(10));
 		}
 		
 	}

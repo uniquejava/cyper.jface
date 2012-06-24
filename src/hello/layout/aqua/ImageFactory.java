@@ -16,7 +16,23 @@ public class ImageFactory {
 	public final static String REGISTER_SERVER = "wiz_new_server.gif";
 	public final static String FILTER = "filter.gif";
 	public final static String SQL_EDITOR = "sql_editor.gif";
-	public final static String EXECUTE_SQL = "execute_sql.gif";
+	public final static String EXECUTE_SQL = "execute_1616.gif";
+	public final static String COMMIT = "commit_1616.gif";
+	public final static String ROLLBACK = "rollback_1616.gif";
+	public final static String ADD = "add_row.gif";
+	public final static String SUBTRACT = "delete_row.gif";
+	public final static String LOCK = "lock_1616.gif";
+	public final static String UNLOCK = "unlock_1616.gif";
+	public final static String UP = "up.gif";
+	public final static String DOWN = "down.gif";
+	public final static String TICK = "running.gif";
+	public final static String MYTICK = "running.gif";
+	public final static String DOWN1 = "down1_1616.gif";
+	public final static String DOWN2 = "down2_1616.gif";
+	public final static String WYJ = "wyj_1616.gif";
+	public final static String COLUMN_MODE = "column_mode_1616.gif";
+	public final static String PREV = "up_1616.gif";
+	public final static String NEXT = "down_1616.gif";
 
 	private ImageFactory() {
 	}

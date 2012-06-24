@@ -11,7 +11,14 @@ public class GridDataFactory {
 		gd.grabExcessHorizontalSpace = true;
 		return gd;
 	}
-
+	public static GridData fill_both() {
+		GridData gd = new GridData();
+		gd.horizontalAlignment = SWT.FILL;
+		gd.verticalAlignment = SWT.FILL;
+		gd.grabExcessHorizontalSpace = true;
+		gd.grabExcessVerticalSpace = true;
+		return gd;
+	}
 	public static GridData rowspan(int rowspan) {
 		GridData gd = new GridData();
 		gd.verticalSpan = rowspan;
