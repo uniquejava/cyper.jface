@@ -33,6 +33,7 @@ public class ImageFactory {
 	public final static String COLUMN_MODE = "column_mode_1616.gif";
 	public final static String PREV = "up_1616.gif";
 	public final static String NEXT = "down_1616.gif";
+	public final static String ROW_INDICATOR = "row_indicator.gif";
 
 	private ImageFactory() {
 	}
