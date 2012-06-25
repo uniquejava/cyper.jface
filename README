@@ -1,2 +1,20 @@
 learn the layout of SWT,
 make UI prototype for "Cyper Data Studio"
+1.server list(tree viewer)
+2.sql highlighter
+3.sql beautifier
+4.sql content assisstant
+5.comment/uncomment
+6.execute sql with ? placeholder
+7.cached table schema(offline mode)
+8.lock/unlock
+9.add row
+10.delete row
+11.sort row
+12.view single row
+13.export cvs/excel
+14.copy to java
+15.code genarator
+...
+
+
