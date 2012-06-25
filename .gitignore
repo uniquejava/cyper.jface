@@ -1,6 +1,6 @@
 *.class
 Thumbs.db
-
+bin
 # Package Files #
 *.zip
 *.jar
