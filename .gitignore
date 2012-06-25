@@ -2,6 +2,7 @@
 Thumbs.db
 
 # Package Files #
+*.zip
 *.jar
 *.war
 *.ear

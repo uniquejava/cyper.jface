@@ -11,10 +11,13 @@
  */
 package hello.example.ktable;
 
+import hello.example.ktable.dao.MyDao;
 import hello.model.Person;
 import hello.model.PersonFactory;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
@@ -33,14 +36,12 @@ import de.kupzog.ktable.renderers.TextCellRenderer;
 /**
  * @author Friederich Kupzog
  */
-public class TextModelExample extends KTableDefaultModel {
+public class SQLResultModel extends KTableDefaultModel {
 
-    public  List<Person> list = PersonFactory.createPersons(3);
+	public String[] columnHeader = null;
+	public int resultCount = 0;
     public int[] lastRowSelection = {1};
     
-    private static String[] tableHeader = {"ID","NAME","GENDER","COLOR"};
-    private static final int COLS = tableHeader.length;
-
 	private HashMap content = new HashMap();
     
     private final FixedCellRenderer m_fixedRenderer =
@@ -53,7 +54,44 @@ public class TextModelExample extends KTableDefaultModel {
     /**
      * Initialize the base implementation.
      */
-    public TextModelExample() {
+    public SQLResultModel() {
+    	setColumnWidth(0, 20);
+    	setColumnWidth(1, 40);
+    	
+		MyDao dao = new MyDao();
+		List<LinkedHashMap<String, Object>> list = dao.query("EMPLOYEE");
+		this.resultCount = list.size()-1;
+		
+		
+		int rowNo = 0, col0=0, col1 = 1;
+		for (LinkedHashMap<String, Object> row : list) {
+			
+			//dump header
+			if (rowNo == 0) {
+				columnHeader = new String[row.size()];
+				row.values().toArray(columnHeader);
+				//set header
+		    	setContentAt(col0, 0, "");
+		    	setContentAt(col1, 0, "");
+		    	for (int i = 0; i < columnHeader.length; i++) {
+		    		setContentAt(i+2, 0, columnHeader[i]);
+				}
+			}else{
+				setContentAt(col0, rowNo, "");
+	    		setContentAt(col1, rowNo, String.valueOf(rowNo));
+				//dump row data
+				int colj = 2;
+				for (Iterator it = row.keySet().iterator(); it.hasNext();) {
+					String key = (String) it.next();
+					setContentAt(colj, rowNo, row.get(key));
+					colj++;
+				}
+			}
+			rowNo++;
+		}
+	
+    	
+    	
         // before initializing, you probably have to set some member values
         // to make all model getter methods work properly.
         initialize();
@@ -66,38 +104,8 @@ public class TextModelExample extends KTableDefaultModel {
     @Override
     public void initialize() {
     	
-    	//set header
-    	setContentAt(0, 0, "");
-    	setContentAt(1, 0, "");
-    	for (int i = 0; i < tableHeader.length; i++) {
-    		setContentAt(i+2, 0, tableHeader[i]);
-		}
-    	
-    	//set content
-    	int rowCount = list.size();
-    	for (int i = 0; i < rowCount; i++) {
-    		Person p = list.get(i);
-    		//point to row 1 by default
-    		setContentAt(0, i+1, i==0?">":"");
-    		setContentAt(1, i+1, String.valueOf(i+1));
-    		setContentAt(2, i+1, String.valueOf(p.getId()));
-    		setContentAt(3, i+1, p.getName());
-    		setContentAt(4, i+1, p.getGender());
-    		setContentAt(5, i+1, p.getColor());
-		}
-    	
     }
     
-    public void addPerson(int row, Person p){
-    		list.add(row,p);
-        	initialize();
-    }
-    public void removePerson(int row){
-    	if (row>0 && list.size()>0) {
-    		list.remove(row-1);
-        	initialize();
-		}
-    } 
     // Content:
     public Object doGetContentAt(int col, int row) {
         //System.out.println("col "+col+" row "+row);
@@ -113,6 +121,7 @@ public class TextModelExample extends KTableDefaultModel {
     public KTableCellEditor doGetCellEditor(int col, int row) {
     	if (col<getFixedColumnCount() || row<getFixedRowCount())
     		return null;
+    	/*
         if (col % 3 == 1) 
         {
             KTableCellEditorCombo e = new KTableCellEditorCombo();
@@ -130,7 +139,8 @@ public class TextModelExample extends KTableDefaultModel {
         else
         {
             return new KTableCellEditorText();
-        }
+        }*/
+    	return new KTableCellEditorText();
     }
 
     /*
@@ -142,7 +152,7 @@ public class TextModelExample extends KTableDefaultModel {
 
     // Table size:
     public int doGetRowCount() {
-        return list.size()+getFixedRowCount();
+        return resultCount+getFixedRowCount();
     }
 
     public int getFixedHeaderRowCount() {
@@ -150,7 +160,7 @@ public class TextModelExample extends KTableDefaultModel {
     }
 
     public int doGetColumnCount() {
-        return COLS+getFixedColumnCount();
+        return columnHeader.length + getFixedColumnCount();
     }
 
     public int getFixedHeaderColumnCount() {
