@@ -4,7 +4,6 @@ import static hello.layout.aqua.ImageFactory.ADD;
 import static hello.layout.aqua.ImageFactory.LOGO;
 import static hello.layout.aqua.ImageFactory.SUBTRACT;
 import static hello.layout.aqua.ImageFactory.loadImage;
-import hello.model.Person;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ViewForm;
@@ -66,12 +65,16 @@ public class Main {
 				}
 			    public void cellSelected(int col, int row, int statemask) {
 					System.out.println("Cell ["+col+";"+row+"] selected11.");
-					updateRowIndicator(row);
+					if (row!=0) {
+						updateRowIndicator(row);
+					}
 				}
 				
 				public void fixedCellSelected(int col, int row, int statemask) {
 					System.out.println("Header ["+col+";"+row+"] selected11.");
-					updateRowIndicator(row);
+					if (row!=0) {
+						updateRowIndicator(row);
+					}
 				}
 			}
 		);
@@ -85,15 +88,16 @@ public class Main {
 			public void handleEvent(Event event) {
 				SQLResultModel model = (SQLResultModel) table.getModel();
 				if (event.widget == add) {
-					int rowCount = model.getRowCount();
 					int[] rowSelection = table.getRowSelection();
-					int row = 1;
+					int refRowNumber = 1;
 					if (rowSelection!=null && rowSelection.length>0) {
-						row = rowSelection[0];
+						refRowNumber = rowSelection[0];
 					}
-					
-//					model.addPerson(row-1, new Person(0, " ", " ", " "));
-//					table.setSelection(4, row-1, true);
+					if (refRowNumber==0) {
+						refRowNumber = 1;
+					}
+					model.insertBlankRow(refRowNumber);
+					model.refresh();
 					table.redraw();
 				}else if (event.widget==sub) {
 					int[] rowSelection = table.getRowSelection();

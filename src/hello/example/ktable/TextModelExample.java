@@ -62,6 +62,7 @@ public class TextModelExample extends KTableDefaultModel {
         // so we change it:
         m_textRenderer.setForeground(
                 Display.getCurrent().getSystemColor(SWT.COLOR_DARK_GREEN));
+        
     }
     @Override
     public void initialize() {

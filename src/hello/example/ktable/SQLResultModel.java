@@ -12,13 +12,16 @@
 package hello.example.ktable;
 
 import hello.example.ktable.dao.MyDao;
-import hello.model.Person;
-import hello.model.PersonFactory;
+import hello.example.ktable.util.BlankRow;
+import hello.example.ktable.util.DecoratedRow;
+import hello.example.ktable.util.HeaderRow;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
@@ -27,8 +30,6 @@ import org.eclipse.swt.widgets.Display;
 import de.kupzog.ktable.KTableCellEditor;
 import de.kupzog.ktable.KTableCellRenderer;
 import de.kupzog.ktable.KTableDefaultModel;
-import de.kupzog.ktable.editors.KTableCellEditorCombo;
-import de.kupzog.ktable.editors.KTableCellEditorComboText;
 import de.kupzog.ktable.editors.KTableCellEditorText;
 import de.kupzog.ktable.renderers.FixedCellRenderer;
 import de.kupzog.ktable.renderers.TextCellRenderer;
@@ -38,190 +39,204 @@ import de.kupzog.ktable.renderers.TextCellRenderer;
  */
 public class SQLResultModel extends KTableDefaultModel {
 
-	public String[] columnHeader = null;
+	public String[] tableHeader = null;
 	public int resultCount = 0;
-    public int[] lastRowSelection = {1};
-    
-	private HashMap content = new HashMap();
-    
-    private final FixedCellRenderer m_fixedRenderer =
-        new FixedCellRenderer(FixedCellRenderer.STYLE_FLAT  |
-            TextCellRenderer.INDICATION_FOCUS_ROW);
-    
-    private final TextCellRenderer m_textRenderer = 
-        new TextCellRenderer(TextCellRenderer.INDICATION_FOCUS_ROW);
+	public int[] lastRowSelection = { 1 };
 
-    /**
-     * Initialize the base implementation.
-     */
-    public SQLResultModel() {
-    	setColumnWidth(0, 20);
-    	setColumnWidth(1, 40);
-    	
+	private HashMap content = new HashMap();
+
+	private final FixedCellRenderer m_fixedRenderer = new FixedCellRenderer(
+			FixedCellRenderer.STYLE_FLAT
+					| TextCellRenderer.INDICATION_FOCUS_ROW);
+
+	private final TextCellRenderer m_textRenderer = new TextCellRenderer(
+			TextCellRenderer.INDICATION_FOCUS_ROW);
+	private List<LinkedHashMap<String, Object>> list = new ArrayList<LinkedHashMap<String, Object>>();
+
+	/**
+	 * @param refRowNumber
+	 *            starts from 1, because 0 is header row.
+	 */
+	public void insertBlankRow(int refRowNumber) {
+		//the first row is always header row
+		//so blank row at least starts from 1;
+		list.add(refRowNumber, new BlankRow(tableHeader));
+	}
+
+	/**
+	 * Initialize the base implementation.
+	 */
+	public SQLResultModel() {
+		setColumnWidth(0, 20);
+		setColumnWidth(1, 40);
+
 		MyDao dao = new MyDao();
-		List<LinkedHashMap<String, Object>> list = dao.query("EMPLOYEE");
-		this.resultCount = list.size()-1;
+		list = dao.query("EMPLOYEE");
 		
-		
-		int rowNo = 0, col0=0, col1 = 1;
-		for (LinkedHashMap<String, Object> row : list) {
-			
-			//dump header
-			if (rowNo == 0) {
-				columnHeader = new String[row.size()];
-				row.values().toArray(columnHeader);
-				//set header
-		    	setContentAt(col0, 0, "");
-		    	setContentAt(col1, 0, "");
-		    	for (int i = 0; i < columnHeader.length; i++) {
-		    		setContentAt(i+2, 0, columnHeader[i]);
-				}
+		refresh();
+	}
+
+	public void refresh() {
+		this.resultCount = list.size() - 1;
+		for (int i = 0; i < list.size(); i++) {
+			Map row = list.get(i);
+			if (row instanceof HeaderRow) {
+				HeaderRow headerRow = (HeaderRow) row;
+				this.tableHeader = new String[headerRow.size()];
+				headerRow.values().toArray(tableHeader);
+				break;
+			}
+		}
+	
+		int rowNo = 0;
+		int blankRowCount = 0;
+		for (LinkedHashMap<String, Object> rowx : list) {
+			Map row = null;
+			if (rowx instanceof BlankRow) {
+				row = rowx;
+				blankRowCount++;
 			}else{
-				setContentAt(col0, rowNo, "");
-	    		setContentAt(col1, rowNo, String.valueOf(rowNo));
-				//dump row data
-				int colj = 2;
-				for (Iterator it = row.keySet().iterator(); it.hasNext();) {
-					String key = (String) it.next();
-					setContentAt(colj, rowNo, row.get(key));
-					colj++;
-				}
+				row = new DecoratedRow(rowx, rowNo, rowNo == 1,blankRowCount);
+			}
+			int colj = 0;
+			for (Iterator it = row.keySet().iterator(); it.hasNext();) {
+				String key = (String) it.next();
+				setContentAt(colj, rowNo, row.get(key));
+				colj++;
 			}
 			rowNo++;
 		}
-	
-    	
-    	
-        // before initializing, you probably have to set some member values
-        // to make all model getter methods work properly.
-        initialize();
-        
-        // we don't want the default foreground color on text cells,
-        // so we change it:
-        m_textRenderer.setForeground(
-                Display.getCurrent().getSystemColor(SWT.COLOR_DARK_GREEN));
-    }
-    @Override
-    public void initialize() {
-    	
-    }
-    
-    // Content:
-    public Object doGetContentAt(int col, int row) {
-        //System.out.println("col "+col+" row "+row);
-        String erg = (String) content.get(col + "/" + row);
-        if (erg != null)
-            return erg;
-        return col + "/" + row;
-    }
 
-    /*
-     * overridden from superclass
-     */
-    public KTableCellEditor doGetCellEditor(int col, int row) {
-    	if (col<getFixedColumnCount() || row<getFixedRowCount())
-    		return null;
-    	/*
-        if (col % 3 == 1) 
-        {
-            KTableCellEditorCombo e = new KTableCellEditorCombo();
-            e.setItems(new String[] { "First text", "Second text",
-                            "third text" });
-            return e;
-        }
-        else if (col % 3 == 2) 
-        {
-                KTableCellEditorComboText e = new KTableCellEditorComboText();
-                e.setItems(new String[] { "You choose", "or type",
-                                "a new content." });
-                return e;
-        }
-        else
-        {
-            return new KTableCellEditorText();
-        }*/
-    	return new KTableCellEditorText();
-    }
+		// before initializing, you probably have to set some member values
+		// to make all model getter methods work properly.
+		initialize();
 
-    /*
-     * overridden from superclass
-     */
-    public void doSetContentAt(int col, int row, Object value) {
-        content.put(col + "/" + row, value);
-    }
+		// we don't want the default foreground color on text cells,
+		// so we change it:
+		m_textRenderer.setForeground(Display.getCurrent().getSystemColor(
+				SWT.COLOR_DARK_GREEN));
+	}
 
-    // Table size:
-    public int doGetRowCount() {
-        return resultCount+getFixedRowCount();
-    }
+	@Override
+	public void initialize() {
 
-    public int getFixedHeaderRowCount() {
-        return 1;
-    }
+	}
 
-    public int doGetColumnCount() {
-        return columnHeader.length + getFixedColumnCount();
-    }
+	// Content:
+	public Object doGetContentAt(int col, int row) {
+		// System.out.println("col "+col+" row "+row);
+		String erg = (String) content.get(col + "/" + row);
+		if (erg != null)
+			return erg;
+		return col + "/" + row;
+	}
 
-    public int getFixedHeaderColumnCount() {
-        return 2;
-    }
-    
-    /* (non-Javadoc)
-     * @see de.kupzog.ktable.KTableModel#getFixedSelectableRowCount()
-     */
-    public int getFixedSelectableRowCount() {
-        return 0;
-    }
+	/*
+	 * overridden from superclass
+	 */
+	public KTableCellEditor doGetCellEditor(int col, int row) {
+		if (col < getFixedColumnCount() || row < getFixedRowCount())
+			return null;
+		/*
+		 * if (col % 3 == 1) { KTableCellEditorCombo e = new
+		 * KTableCellEditorCombo(); e.setItems(new String[] { "First text",
+		 * "Second text", "third text" }); return e; } else if (col % 3 == 2) {
+		 * KTableCellEditorComboText e = new KTableCellEditorComboText();
+		 * e.setItems(new String[] { "You choose", "or type", "a new content."
+		 * }); return e; } else { return new KTableCellEditorText(); }
+		 */
+		return new KTableCellEditorText();
+	}
 
-    /* (non-Javadoc)
-     * @see de.kupzog.ktable.KTableModel#getFixedSelectableColumnCount()
-     */
-    public int getFixedSelectableColumnCount() {
-        return 0;
-    }
+	/*
+	 * overridden from superclass
+	 */
+	public void doSetContentAt(int col, int row, Object value) {
+		content.put(col + "/" + row, value);
+	}
 
-    public boolean isColumnResizable(int col) {
-        return true;
-    }
+	// Table size:
+	public int doGetRowCount() {
+		return resultCount + getFixedRowCount();
+	}
 
-    public boolean isRowResizable(int row) {
-        return true;
-    }
+	public int getFixedHeaderRowCount() {
+		return 1;
+	}
 
-    public int getRowHeightMinimum() {
-        return 18;
-    }
-    
-    // Rendering
-    public KTableCellRenderer doGetCellRenderer(int col, int row) {
-        if (isFixedCell(col, row))
-            return m_fixedRenderer;
-        
-        return m_textRenderer;
-    }
+	public int doGetColumnCount() {
+		return tableHeader.length; /* + getFixedColumnCount(); */
+	}
 
-    /* (non-Javadoc)
-     * @see de.kupzog.ktable.KTableModel#belongsToCell(int, int)
-     */
-    public Point doBelongsToCell(int col, int row) {
-        // no cell spanning:
-        return null;
-    }
+	public int getFixedHeaderColumnCount() {
+		return 2;
+	}
 
-    /* (non-Javadoc)
-     * @see de.kupzog.ktable.KTableDefaultModel#getInitialColumnWidth(int)
-     */
-    public int getInitialColumnWidth(int column) {
-        return 90;
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.kupzog.ktable.KTableModel#getFixedSelectableRowCount()
+	 */
+	public int getFixedSelectableRowCount() {
+		return 0;
+	}
 
-    /* (non-Javadoc)
-     * @see de.kupzog.ktable.KTableDefaultModel#getInitialRowHeight(int)
-     */
-    public int getInitialRowHeight(int row) {
-    	if (row==0) return 22;
-    	return 18;
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.kupzog.ktable.KTableModel#getFixedSelectableColumnCount()
+	 */
+	public int getFixedSelectableColumnCount() {
+		return 0;
+	}
+
+	public boolean isColumnResizable(int col) {
+		return true;
+	}
+
+	public boolean isRowResizable(int row) {
+		return true;
+	}
+
+	public int getRowHeightMinimum() {
+		return 18;
+	}
+
+	// Rendering
+	public KTableCellRenderer doGetCellRenderer(int col, int row) {
+		if (isFixedCell(col, row))
+			return m_fixedRenderer;
+
+		return m_textRenderer;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.kupzog.ktable.KTableModel#belongsToCell(int, int)
+	 */
+	public Point doBelongsToCell(int col, int row) {
+		// no cell spanning:
+		return null;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.kupzog.ktable.KTableDefaultModel#getInitialColumnWidth(int)
+	 */
+	public int getInitialColumnWidth(int column) {
+		return 90;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see de.kupzog.ktable.KTableDefaultModel#getInitialRowHeight(int)
+	 */
+	public int getInitialRowHeight(int row) {
+		if (row == 0)
+			return 22;
+		return 18;
+	}
 }
-

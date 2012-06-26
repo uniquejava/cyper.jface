@@ -1,5 +1,7 @@
 package hello.example.ktable.dao;
 
+import hello.example.ktable.util.HeaderRow;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -30,16 +32,16 @@ public class MyDao {
 			int count = meta.getColumnCount();
 			String[] tableHeaders = new String[count];
 			
-			LinkedHashMap<String, Object> row = new LinkedHashMap<String, Object>();
+			LinkedHashMap<String, Object> headerRow = new HeaderRow();
 			for (int i = 0; i < count; i++) {
 				tableHeaders[i] = meta.getColumnName(i+1);
 				//the first row is column name info
-				row.put(String.valueOf(i), tableHeaders[i]);
+				headerRow.put(tableHeaders[i], tableHeaders[i]);
 			}
-			result.add(row);
+			result.add(headerRow);
 
 			while (rs.next()) {
-				row = new LinkedHashMap<String, Object>();
+				LinkedHashMap<String, Object> row = new LinkedHashMap<String, Object>();
 				for (int i = 0; i < tableHeaders.length; i++) {
 					row.put(tableHeaders[i], rs.getString(tableHeaders[i]));
 				}
