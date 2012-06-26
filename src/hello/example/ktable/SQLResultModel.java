@@ -15,6 +15,8 @@ import hello.example.ktable.dao.MyDao;
 import hello.example.ktable.util.BlankRow;
 import hello.example.ktable.util.DecoratedRow;
 import hello.example.ktable.util.HeaderRow;
+import hello.example.ktable.util.HiddenRow;
+import hello.example.ktable.util.ModelUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,10 +25,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 
+import de.kupzog.ktable.KTable;
 import de.kupzog.ktable.KTableCellEditor;
 import de.kupzog.ktable.KTableCellRenderer;
 import de.kupzog.ktable.KTableDefaultModel;
@@ -39,6 +43,7 @@ import de.kupzog.ktable.renderers.TextCellRenderer;
  */
 public class SQLResultModel extends KTableDefaultModel {
 
+	public static final int FIXED_HEADER_ROW_COUNT = 1;
 	public String[] tableHeader = null;
 	public int resultCount = 0;
 	public int[] lastRowSelection = { 1 };
@@ -57,27 +62,55 @@ public class SQLResultModel extends KTableDefaultModel {
 	 * @param refRowNumber
 	 *            starts from 1, because 0 is header row.
 	 */
-	public void insertBlankRow(int refRowNumber) {
-		//the first row is always header row
-		//so blank row at least starts from 1;
+	public List insertBlankRow(int refRowNumber) {
+		// the first row is always header row
+		// so blank row at least starts from 1;
+		Assert.isTrue(refRowNumber > 0);
+		//因为有HiddenRow的存在，所以refRowNumber已经不准确了
 		list.add(refRowNumber, new BlankRow(tableHeader));
+		return list;
+	}
+
+	public List deleteRow(int refRowNumber) {
+		// the first row is always header row
+		//这里传入的refRowNumber实际上是ktableIndex
+		//由此计算它在list中的实际位置很麻烦，我们最好根据row中数据的唯一 标识从list中删除之！
+		//根据下标似乎很不靠谱
+		Assert.isTrue(refRowNumber > 0);
+		//因为有HiddenRow的存在，所以refRowNumber已经不准确了
+		//我们需要先把refRowNumber之前的hidden row展开，计算出list中需要删除行的实际位置.
+		int actualRefRowNumber = ModelUtil.getActualRefRowNumberInList(list, refRowNumber);
+		
+		Map deletedRow = list.remove(actualRefRowNumber);
+		
+		//如果是非空白行，删除后还要再添加个马甲进去
+		if (!(deletedRow instanceof BlankRow)) {
+			list.add(actualRefRowNumber, new HiddenRow(deletedRow));
+		}
+		
+		return list;
 	}
 
 	/**
 	 * Initialize the base implementation.
 	 */
-	public SQLResultModel() {
+	public SQLResultModel(KTable table) {
 		setColumnWidth(0, 20);
 		setColumnWidth(1, 40);
-
-		MyDao dao = new MyDao();
-		list = dao.query("EMPLOYEE");
-		
-		refresh();
+		refresh(table, new MyDao().query("ORG"), 1);
 	}
 
-	public void refresh() {
-		this.resultCount = list.size() - 1;
+	/**
+	 * after list changed, we need to call this method. it will redraw the UI.
+	 * 
+	 */
+	public void refresh(KTable table, List<LinkedHashMap<String, Object>> list,
+			int indicatorRowNumber) {
+		this.list = list;
+		
+		this.resultCount = ModelUtil.getRowCountWithHeaderRow(list);
+		
+		
 		for (int i = 0; i < list.size(); i++) {
 			Map row = list.get(i);
 			if (row instanceof HeaderRow) {
@@ -87,26 +120,52 @@ public class SQLResultModel extends KTableDefaultModel {
 				break;
 			}
 		}
-	
-		int rowNo = 0;
+
+		//listIndex就是list的遍历下标，值域为[0,list.size());
+		//每次循环都会自增一次.
+		int listIndex = -1;
+		//ktableIndex是Ktable计量table的行号，0表示表头所在的行，其它为表中的实际行，可能是没有行号的空白行，HiddenRow是已经删除的行，不在KtableIndex之列.
+		//ktableIndex = listIndex - hiddenRowCount;
+		int ktableIndex = -1;
+		
+		//rowNumber从1开始，是显示给用户看的行号,空白行的rowNumber为空白,因为Hidden Row占个行号，所以用户看到的行号不是连续的
+		//rowNumber = ktableIndex + hiddenRowCount = listIndex
+		int rowNumber = 1;
+		
+		
 		int blankRowCount = 0;
-		for (LinkedHashMap<String, Object> rowx : list) {
-			Map row = null;
-			if (rowx instanceof BlankRow) {
-				row = rowx;
+		int hiddenRowCount = 0;
+		
+		List decoratedList = new ArrayList();
+
+		for (LinkedHashMap<String, Object> rowInList : list) {
+			listIndex++;
+			Map row2Use = null;
+			if (rowInList instanceof HiddenRow) {
+				//跳过hidden row.
+				hiddenRowCount++;
+				decoratedList.add(rowInList);
+				continue;
+			} else if (rowInList instanceof BlankRow) {
+				// blank row已经装饰好了，直接使用
+				row2Use = rowInList;
 				blankRowCount++;
-			}else{
-				row = new DecoratedRow(rowx, rowNo, rowNo == 1,blankRowCount);
-			}
+			} else {
+				row2Use = new DecoratedRow(rowInList, listIndex,
+						listIndex == indicatorRowNumber, blankRowCount);
+			} 
+			decoratedList.add(row2Use);
+			
+			ktableIndex = listIndex - hiddenRowCount;
+			
 			int colj = 0;
-			for (Iterator it = row.keySet().iterator(); it.hasNext();) {
+			for (Iterator it = row2Use.keySet().iterator(); it.hasNext();) {
 				String key = (String) it.next();
-				setContentAt(colj, rowNo, row.get(key));
+				setContentAt(colj, ktableIndex, row2Use.get(key));
 				colj++;
 			}
-			rowNo++;
 		}
-
+		this.list = decoratedList;
 		// before initializing, you probably have to set some member values
 		// to make all model getter methods work properly.
 		initialize();
@@ -115,6 +174,11 @@ public class SQLResultModel extends KTableDefaultModel {
 		// so we change it:
 		m_textRenderer.setForeground(Display.getCurrent().getSystemColor(
 				SWT.COLOR_DARK_GREEN));
+
+		// table.setSelection should be called after table has Model
+		// so let's setModel for table first
+		table.setModel(this);
+		table.setSelection(2, indicatorRowNumber, false);
 	}
 
 	@Override
@@ -157,11 +221,11 @@ public class SQLResultModel extends KTableDefaultModel {
 
 	// Table size:
 	public int doGetRowCount() {
-		return resultCount + getFixedRowCount();
+		return resultCount;
 	}
 
 	public int getFixedHeaderRowCount() {
-		return 1;
+		return FIXED_HEADER_ROW_COUNT;
 	}
 
 	public int doGetColumnCount() {

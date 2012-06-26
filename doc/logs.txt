@@ -1,6 +1,17 @@
+
+2012-06-26
+晚间到27凌晨
+插入空白行已经实现，引入了HiddenRow，做减法时用，目前效果不好。
+明天
+按几种思路分别实现，想法要大胆，不要一条胡同走到死。
+要给list中数据唯一标识，尝试使用list.remove(obj)接口来删除，而不是使用list.remove(index)?
+
+
 2012-06-26
 抽象出了HeaderRow,BlankRow,DecoratedRow
 尝试实现插入空白行，效果不错
+
+
 
 
 

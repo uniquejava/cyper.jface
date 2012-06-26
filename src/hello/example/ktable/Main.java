@@ -1,10 +1,14 @@
 package hello.example.ktable;
 
+import static hello.example.ktable.util.ModelUtil.*;
 import static hello.layout.aqua.ImageFactory.ADD;
 import static hello.layout.aqua.ImageFactory.LOGO;
 import static hello.layout.aqua.ImageFactory.SUBTRACT;
 import static hello.layout.aqua.ImageFactory.loadImage;
 
+import java.util.List;
+
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ViewForm;
 import org.eclipse.swt.layout.FillLayout;
@@ -45,9 +49,9 @@ public class Main {
 		
 		final KTable table = new KTable(contentPanel, SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL 
 				| SWT.H_SCROLL | SWTX.FILL_WITH_LASTCOL | SWTX.EDIT_ON_KEY);
-		table.setModel(new SQLResultModel());
+		table.setModel(new SQLResultModel(table));
 		//select first row by default
-		table.setSelection(2, 1,false);
+//		table.setSelection(2, 1,false);
 		table.addCellSelectionListener(
 			new KTableCellSelectionListener()
 			{
@@ -71,6 +75,7 @@ public class Main {
 				}
 				
 				public void fixedCellSelected(int col, int row, int statemask) {
+					//当点击表头时，table.getRowSelection()不会变化，先前在哪，现在依然指向哪儿
 					System.out.println("Header ["+col+";"+row+"] selected11.");
 					if (row!=0) {
 						updateRowIndicator(row);
@@ -88,24 +93,23 @@ public class Main {
 			public void handleEvent(Event event) {
 				SQLResultModel model = (SQLResultModel) table.getModel();
 				if (event.widget == add) {
-					int[] rowSelection = table.getRowSelection();
-					int refRowNumber = 1;
-					if (rowSelection!=null && rowSelection.length>0) {
-						refRowNumber = rowSelection[0];
-					}
-					if (refRowNumber==0) {
-						refRowNumber = 1;
-					}
-					model.insertBlankRow(refRowNumber);
-					model.refresh();
-					table.redraw();
+					int refRowNumber = calcRefRowNumber(table);
+					//当插入空白行后，row indicator是否指向新的空白行?Yes,!PLD是这么做的
+					//新插入的空白行没有行号
+					//其它行的行号保持不变
+					List newList = model.insertBlankRow(refRowNumber);
+					model.refresh(table,newList,refRowNumber);
+//					table.redraw();
+					
 				}else if (event.widget==sub) {
-					int[] rowSelection = table.getRowSelection();
-					if (rowSelection!=null && rowSelection.length>0) {
-						int row = rowSelection[0];
-//						model.removePerson(row);
-						table.setSelection(4, row-1, true);
-						table.redraw();
+					int rowSelectoin = getRowSelection(table);
+					if (rowSelectoin!=NO_SELECTION) {
+						//当删除的是空白行，OK，直接删除,反正它没有行号。
+						//当删除的是普通行，此时其它行的行号保持不变，但删除这行使行号变得不连续了
+						//为做到此效果，应该在list中保留此行，为此本屌引入HiddenRow（占着行号但不显示)
+						//注意rowCount不再是list.size()而是list是排除HiddenRow之后的size。
+						List newList = model.deleteRow(rowSelectoin);
+						model.refresh(table,newList,rowSelectoin);
 					}
 				}
 
@@ -114,6 +118,7 @@ public class Main {
 		add.addListener(SWT.Selection, listener);
 		sub.addListener(SWT.Selection, listener);
 	}
+
 
 	/**
 	 * @param args
