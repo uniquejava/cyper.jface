@@ -9,7 +9,7 @@
  fkmk@kupzog.de
  www.kupzog.de/fkmk
  */
-package hello.example.ktable;
+package hello.example.ktable.text;
 
 import hello.example.ktable.dao.MyDao;
 import hello.example.ktable.util.BlankRow;
@@ -30,7 +30,7 @@ import org.eclipse.swt.widgets.Display;
 import de.kupzog.ktable.KTable;
 import de.kupzog.ktable.KTableCellEditor;
 import de.kupzog.ktable.KTableCellRenderer;
-import de.kupzog.ktable.KTableSortedModel;
+import de.kupzog.ktable.KTableDefaultModel;
 import de.kupzog.ktable.editors.KTableCellEditorText;
 import de.kupzog.ktable.renderers.FixedCellRenderer;
 import de.kupzog.ktable.renderers.TextCellRenderer;
@@ -38,37 +38,61 @@ import de.kupzog.ktable.renderers.TextCellRenderer;
 /**
  * @author Friederich Kupzog
  */
-public class SQLResultModel extends KTableSortedModel {
+public class SQLResultModelText extends KTableDefaultModel {
 
-	//上面的表头行数
 	public static final int FIXED_HEADER_ROW_COUNT = 1;
-	
-	//表头，除了数据库表结构外，还包含indicator和行号那两列
 	public String[] tableHeader = null;
-
-	// 我们让resultCount=list.size()，即包含表头.
 	public int resultCount = 0;
-
-	// 保存上次选中的行的行号，这样指向新行时，容易将上次选中行的indicator清除，而不必遍历list.
 	public int[] lastRowSelection = { 1 };
 
-	// 示例中就有的，ktable只认content，它要从中取出数据展示，key为col + '/' + row
 	private HashMap content = new HashMap();
 
-	
 	private final FixedCellRenderer m_fixedRenderer = new FixedCellRenderer(
 			FixedCellRenderer.STYLE_FLAT
-					| TextCellRenderer.INDICATION_FOCUS_ROW
-					| FixedCellRenderer.INDICATION_SORT);
+					| TextCellRenderer.INDICATION_FOCUS_ROW);
 
 	private final TextCellRenderer m_textRenderer = new TextCellRenderer(
 			TextCellRenderer.INDICATION_FOCUS_ROW);
 	private List<Row> list = new ArrayList<Row>();
 
 	/**
+	 * @param refRowNumber
+	 *            starts from 1, because 0 is header row.
+	 */
+	public List insertBlankRow(int refRowNumber) {
+		// the first row is always header row
+		// so blank row at least starts from 1;
+		Assert.isTrue(refRowNumber > 0);
+		// 因为有HiddenRow的存在，所以refRowNumber已经不准确了
+		list.add(refRowNumber, new BlankRow(tableHeader));
+		return list;
+	}
+
+	public List deleteRow(int refRowNumber) {
+		// the first row is always header row
+		// 这里传入的refRowNumber实际上是ktableIndex
+		// 由此计算它在list中的实际位置很麻烦，我们最好根据row中数据的唯一 标识从list中删除之！
+		// 根据下标似乎很不靠谱
+		Assert.isTrue(refRowNumber > 0);
+		// 因为有HiddenRow的存在，所以refRowNumber已经不准确了
+		// 我们需要先把refRowNumber之前的hidden row展开，计算出list中需要删除行的实际位置.
+		// int actualRefRowNumber = ModelUtil.getActualRefRowNumberInList(list,
+		// refRowNumber);
+
+		list.remove(refRowNumber);
+
+		// 如果是非空白行，删除后还要再添加个马甲进去
+		// if (!(deletedRow instanceof BlankRow)) {
+		// list.add(actualRefRowNumber, new HiddenRow(deletedRow));
+		// }
+
+		return list;
+	}
+
+	/**
 	 * Initialize the base implementation.
 	 */
-	public SQLResultModel(KTable table) {
+	public SQLResultModelText(KTable table) {
 		setColumnWidth(0, 20);
 		setColumnWidth(1, 40);
 		refresh(table, new MyDao().query("ORG"), 1);
@@ -94,10 +118,6 @@ public class SQLResultModel extends KTableSortedModel {
 			}
 		}
 
-		// before initializing, you probably have to set some member values
-		// to make all model getter methods work properly.
-		initialize();
-
 		// listIndex就是list的遍历下标，值域为[0,list.size());
 		// 每次循环都会自增一次.
 		int listIndex = -1;
@@ -116,6 +136,10 @@ public class SQLResultModel extends KTableSortedModel {
 				colj++;
 			}
 		}
+		// this.list = decoratedList;
+		// before initializing, you probably have to set some member values
+		// to make all model getter methods work properly.
+		initialize();
 
 		// we don't want the default foreground color on text cells,
 		// so we change it:
@@ -129,10 +153,10 @@ public class SQLResultModel extends KTableSortedModel {
 
 	}
 
-	// @Override
-	// public void initialize() {
-	//
-	// }
+	@Override
+	public void initialize() {
+
+	}
 
 	// Content:
 	public Object doGetContentAt(int col, int row) {
@@ -141,26 +165,6 @@ public class SQLResultModel extends KTableSortedModel {
 		if (erg != null)
 			return erg;
 		return col + "/" + row;
-	}
-
-	/**
-	 * @param refRowNumber
-	 *            starts from 1, because 0 is header row.
-	 */
-	public List insertBlankRow(int refRowNumber) {
-		// the first row is always header row
-		// so blank row at least starts from 1;
-		Assert.isTrue(refRowNumber > 0);
-		// 因为有HiddenRow的存在，所以refRowNumber已经不准确了
-		list.add(refRowNumber, new BlankRow(tableHeader));
-		return list;
-	}
-
-	public List deleteRow(int refRowNumber) {
-		// the first row is always header row
-		Assert.isTrue(refRowNumber > 0);
-		list.remove(refRowNumber);
-		return list;
 	}
 
 	/*
@@ -201,8 +205,8 @@ public class SQLResultModel extends KTableSortedModel {
 	}
 
 	public int getFixedHeaderColumnCount() {
-
-		// 需要把此方法以下的部分抽象到父类中去，看着就蛋疼
+		
+		//需要把此方法以下的部分抽象到父类中去，看着就蛋疼
 		return 2;
 	}
 

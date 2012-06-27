@@ -1,3 +1,16 @@
+2012-6-28
+27日晚间到28日凌晨
+学习了Ktalbe的排序示例。
+将其整合进来。
+目前已知的问题：
+在排序的状态下，增加和删除行，排序信息会丢失.
+
+和Default相比，玩转SORT有以下几个步骤:
+ * 1.让Model继承KTableSortedModel
+ * 2.给m_FixedRenderer加上FixedCellRenderer.INDICATION_SORT样式
+ * 3.initialize()方法使用父类中的，不要覆盖了.
+ * 4.setContentAt()的调用必须放在initialize()方法调用之后
+ * 5.给table增加addCellSelectionListener（实现fixedCellSelected方法）
 
 
 2012-06-27

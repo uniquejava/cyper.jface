@@ -1,9 +1,20 @@
-package hello.example.table;
+package hello.example.swt_table;
 
-import static hello.ResourceManager.*;
-import static hello.layout.aqua.ImageFactory.*;
+import static hello.ResourceManager.COLOR_SQL_HIGHLIGHT;
+import static hello.ResourceManager.getColor;
+import static hello.layout.aqua.ImageFactory.ADD;
+import static hello.layout.aqua.ImageFactory.COLUMN_MODE;
+import static hello.layout.aqua.ImageFactory.DOWN1;
+import static hello.layout.aqua.ImageFactory.DOWN2;
+import static hello.layout.aqua.ImageFactory.LOCK;
+import static hello.layout.aqua.ImageFactory.LOGO;
+import static hello.layout.aqua.ImageFactory.MYTICK;
+import static hello.layout.aqua.ImageFactory.NEXT;
+import static hello.layout.aqua.ImageFactory.PREV;
+import static hello.layout.aqua.ImageFactory.ROW_INDICATOR;
+import static hello.layout.aqua.ImageFactory.SUBTRACT;
+import static hello.layout.aqua.ImageFactory.WYJ;
 import static hello.layout.aqua.ImageFactory.loadImage;
-import hello.ResourceManager;
 import hello.layout.aqua.util.GridDataFactory;
 
 import org.eclipse.swt.SWT;

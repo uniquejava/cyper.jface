@@ -1,4 +1,4 @@
-package hello.example.ktable;
+package hello.example.ktable.text;
 
 import static hello.example.ktable.util.ModelUtil.NO_SELECTION;
 import static hello.example.ktable.util.ModelUtil.calcRefRowNumber;
@@ -7,8 +7,6 @@ import static hello.layout.aqua.ImageFactory.ADD;
 import static hello.layout.aqua.ImageFactory.LOGO;
 import static hello.layout.aqua.ImageFactory.SUBTRACT;
 import static hello.layout.aqua.ImageFactory.loadImage;
-
-import hello.example.ktable.sort.SortComparatorExample;
 
 import java.util.List;
 
@@ -25,14 +23,10 @@ import org.eclipse.swt.widgets.ToolItem;
 
 import de.kupzog.ktable.KTable;
 import de.kupzog.ktable.KTableCellSelectionListener;
-import de.kupzog.ktable.KTableSortComparator;
-import de.kupzog.ktable.KTableSortOnClick;
 import de.kupzog.ktable.SWTX;
 
 /**
- * 综合示例，向PL/SQL developer看齐.<br>
- * 目前的问题：<br>
- * 1.在排序的状态下，增加和删除行，排序信息会丢失.
+ * 学习KTableDefaultModel.
  * 
  * @author cyper.yin
  * 
@@ -64,10 +58,11 @@ public class Main {
 				| SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL
 				| SWTX.FILL_WITH_LASTCOL | SWTX.EDIT_ON_KEY);
 		// table.setModel(new SQLResultModel(table));
-		SQLResultModel model = new SQLResultModel(table);
+		new SQLResultModelText(table);
 		table.addCellSelectionListener(new KTableCellSelectionListener() {
 			public void updateRowIndicator(int rowNew) {
-				SQLResultModel model = (SQLResultModel) table.getModel();
+				SQLResultModelText model = (SQLResultModelText) table
+						.getModel();
 				int[] rowsSelected = model.lastRowSelection;
 				if (rowsSelected != null) {
 					for (int i = 0; i < rowsSelected.length; i++) {
@@ -96,16 +91,14 @@ public class Main {
 				}
 			}
 		});
-		table.addCellSelectionListener(new KTableSortOnClick(table,
-				new SortComparatorExample(model, -1,
-						KTableSortComparator.SORT_NONE)));
 
 		viewForm.setContent(contentPanel);
 
 		Listener listener = new Listener() {
 			@Override
 			public void handleEvent(Event event) {
-				SQLResultModel model = (SQLResultModel) table.getModel();
+				SQLResultModelText model = (SQLResultModelText) table
+						.getModel();
 				if (event.widget == add) {
 					int refRowNumber = calcRefRowNumber(table);
 					// 当插入空白行后，row indicator是否指向新的空白行?Yes,!PLD是这么做的
