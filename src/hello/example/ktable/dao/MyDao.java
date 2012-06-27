@@ -1,6 +1,7 @@
 package hello.example.ktable.dao;
 
 import hello.example.ktable.util.HeaderRow;
+import hello.example.ktable.util.Row;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -8,14 +9,12 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 public class MyDao {
-	public List<LinkedHashMap<String, Object>> query(String tableName) {
+	public List<Row> query(String tableName) {
 
-		List<LinkedHashMap<String, Object>> result = new ArrayList<LinkedHashMap<String, Object>>();
+		List<Row> result = new ArrayList<Row>();
 		Connection conn = null;
 		Statement stmt = null;
 		ResultSet rs = null;
@@ -31,17 +30,22 @@ public class MyDao {
 			ResultSetMetaData meta = rs.getMetaData();
 			int count = meta.getColumnCount();
 			String[] tableHeaders = new String[count];
-			
-			LinkedHashMap<String, Object> headerRow = new HeaderRow();
+
+			Row headerRow = new HeaderRow();
 			for (int i = 0; i < count; i++) {
-				tableHeaders[i] = meta.getColumnName(i+1);
-				//the first row is column name info
+				tableHeaders[i] = meta.getColumnName(i + 1);
+				// the first row is column name info
 				headerRow.put(tableHeaders[i], tableHeaders[i]);
 			}
 			result.add(headerRow);
 
+			int rowNum = 0;
 			while (rs.next()) {
-				LinkedHashMap<String, Object> row = new LinkedHashMap<String, Object>();
+				rowNum++;
+				Row row = new Row();
+				row.put(Row.KEY_INDICATOR, /*rowNum == 1 ? ">" : */"");
+				row.put(Row.KEY_ROW_NUMBER, String.valueOf(rowNum));
+
 				for (int i = 0; i < tableHeaders.length; i++) {
 					row.put(tableHeaders[i], rs.getString(tableHeaders[i]));
 				}
@@ -68,12 +72,13 @@ public class MyDao {
 
 	public static void main(String[] args) {
 		MyDao dao = new MyDao();
-		List<LinkedHashMap<String, Object>> list = dao.query("EMPLOYEE");
-		for (LinkedHashMap<String, Object> row : list) {
-			for (Iterator it = row.keySet().iterator(); it.hasNext();) {
-				String key = (String) it.next();
-				System.out.println(key +":" + row.get(key));
-			}
+		List<Row> list = dao.query("EMPLOYEE");
+		for (Row row : list) {
+//			for (Iterator it = row.keySet().iterator(); it.hasNext();) {
+//				String key = (String) it.next();
+//				System.out.println(key + ":" + row.get(key));
+//			}
+			System.out.println(row);
 		}
 	}
 }

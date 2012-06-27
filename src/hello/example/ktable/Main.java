@@ -1,6 +1,8 @@
 package hello.example.ktable;
 
-import static hello.example.ktable.util.ModelUtil.*;
+import static hello.example.ktable.util.ModelUtil.NO_SELECTION;
+import static hello.example.ktable.util.ModelUtil.calcRefRowNumber;
+import static hello.example.ktable.util.ModelUtil.getRowSelection;
 import static hello.layout.aqua.ImageFactory.ADD;
 import static hello.layout.aqua.ImageFactory.LOGO;
 import static hello.layout.aqua.ImageFactory.SUBTRACT;
@@ -8,7 +10,6 @@ import static hello.layout.aqua.ImageFactory.loadImage;
 
 import java.util.List;
 
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ViewForm;
 import org.eclipse.swt.layout.FillLayout;
@@ -49,7 +50,8 @@ public class Main {
 		
 		final KTable table = new KTable(contentPanel, SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL 
 				| SWT.H_SCROLL | SWTX.FILL_WITH_LASTCOL | SWTX.EDIT_ON_KEY);
-		table.setModel(new SQLResultModel(table));
+//		table.setModel(new SQLResultModel(table));
+		new SQLResultModel(table);
 		//select first row by default
 //		table.setSelection(2, 1,false);
 		table.addCellSelectionListener(

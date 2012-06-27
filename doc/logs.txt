@@ -1,11 +1,22 @@
 
+
+2012-06-27
+昨晚想复杂了
+行号与生俱来，一旦确定，则不再变化，在组装list时给它固定的行号
+将LinkedHashMap<String<Object>)替换成Row
+删除DecorateRow
+删除HiddenRow
+使用new Model(table)，instead of table.setMode(model)
+
+原来减法也可以这么简单.
+接下来做排序。
+
+
 2012-06-26
 晚间到27凌晨
 插入空白行已经实现，引入了HiddenRow，做减法时用，目前效果不好。
 明天
 按几种思路分别实现，想法要大胆，不要一条胡同走到死。
-要给list中数据唯一标识，尝试使用list.remove(obj)接口来删除，而不是使用list.remove(index)?
-
 
 2012-06-26
 抽象出了HeaderRow,BlankRow,DecoratedRow
