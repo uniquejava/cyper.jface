@@ -1,20 +1,73 @@
+基本目标：
 learn the layout of SWT,
 make UI prototype for "Cyper Data Studio"
+
+紧急需求
+Aqua Data Studio没有代码提示的功能，我都不知道以pool开头的表有哪些，
+而RSA的数据库工具太TMD的卡了，不敢冒RSA崩溃需要重启的风险，综上所述急需CyperDataStudio！！
+URGENT！
+
+the latest UI please see pictures under doc/ui/*.jpg
+
+the latest change log, please see doc/logs.txt
+
 1.server list(tree viewer)
+服务器列表
+
 2.sql highlighter
+SQL语法高亮
+
 3.sql beautifier
+SQL格式化
+
 4.sql content assisstant
+SQL代码提示
+
 5.comment/uncomment
+SQL注释/反注释
+
 6.execute sql with ? placeholder
+能执行带?号的SQL :)
+
 7.cached table schema(offline mode)
+缓存表的schema，以加速代码提示功能（不卡才是王道），并能离线使用.
+
 8.lock/unlock
+仿PL/SQL developer的锁定和解锁模式
+
 9.add row
+添加行，可以复制行，并粘贴行。
+
 10.delete row
+删除行
+
 11.sort row
-12.view single row
-13.export cvs/excel
-14.copy to java
-15.code genarator
+排序
+
+12.single column/ row selection and copy
+可以选中单行/单列进行复制
+
+13.view single row
+查看单行：当行太长时，可以竖着查看一行的数据
+
+14.export cvs/excel
+可以将表中数据直接复制或导出到excel
+
+15.copy to java
+仿PL/SQL的功能，可以将SQL语句拷贝成+号连接的字符串，方便在java代码中直接使用
+
+
+16.code generator
+基于Freemarker模板的代码生成（能做的东西就多了）
+
 ...
+还有很多，比如拖动表到SQL Editor，会出来一个菜单，上面的一堆功能都想实现
+又比如在SQL Editor中随便输入表名，点右键出来的快捷菜单，，上面的一堆功能都想实现
+
+
+总之,希望可以将PL/SQL Developer的功能移植到本工具中
+
+以便在其它DB上也可以使用。
+
 
 
