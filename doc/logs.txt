@@ -1,6 +1,53 @@
+﻿16:32 2012-7-1
+成功了！add/delete/sort终于TMD做好了！
+蛋疼的rowMapping终于被我搞定了。大改！
+不再使用父类的initialize()，甚至不使用父类的setContentAt().
+rowMapping完全由我自己来控制，随心所欲，因此解决了之前让我折腾了很久的问题。
+
+另：29日晚上和30日都在打星际！
+
+接下来做保存数据.
+
+
+
+22:48 2012-6-28
+念在明天是ST最后一天的份上，晚上接到的新defect立马就改完提交了，没有拖到明天下午：）
+现在又是自由身了
+今天重写了KTable自带的KTableSortOnClick，使得排序时先前选中的行继续被选中
+在sourceforge上提了个问题。不过KTable久已失修，两年来只有两个帖子。
+最后还是自己摸索着解决了
+
+现在开始解决昨晚睡觉前的问题，
+add/delete row时排序信息丢失了！
+
+
+17:46 2012-6-28
+ * 目前的问题：<br>
+ * 1.排序时，indicator依然指向先前的行，但是rowSelection不对，应该修改setSelection()方法，要和indicator位置一致.<br>
+ * 06-28解决过程：<br>
+ * 折腾的一段时间还是自己解决了。<br>
+ * 目前的table有两个listener<br>
+ * 第一个onclick是用来处理 表头的点击，排序专用，第二个onclick是用来处理cell的点击，当点击表头时是跳过的。<br>
+ * 方法是在第一个onclick排序结束后，table.redraw调用之前加入如下代码：<br>
+ * <pre>
+ * 				
+	//always keep the same row selected when doing sort.
+	for (int i = 0; i < model.getRowCount(); i++) {
+		String indicatorCell = (String) model.getContentAt(0, i);
+		if (indicatorCell.equals(">")) {
+			//keep selection and indicator on the same row.
+			m_Table.setSelection(2, i, false);
+			break;
+		}
+	}
+ * </pre>
+ 
+要增加一键删除新增的pool的功能，自动删除关联表的数据
+方便测试数据重复利用
+
 2012-6-28
 27日晚间到28日凌晨
-学习了Ktalbe的排序示例。
+学习了Ktable的排序示例。
 将其整合进来。
 目前已知的问题：
 在排序的状态下，增加和删除行，排序信息会丢失.

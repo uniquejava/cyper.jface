@@ -1,0 +1,125 @@
+﻿2:22 2012-6-29
+（Cyper）这是一块很复杂的内容，摸索了一天，终于搞定！
+
+
+ktable的sort很巧妙
+sort不会改变model中content，这map不变。。。。。。
+
+KTableSortedModel继承自KTableDefaultModel
+多了rowMapping这个映射表，这个rowMapping很奇特。这不是map而是个Vector(List的子类）
+多了个comparator，sortColumn和sortOrder
+
+在initialize()中实例化rowMapping，rowMapping中的初始值就是和model中的list保持一致。
+1
+2
+3
+...
+注意它仅是一个列表
+
+排序:排序就是将这个列表中的数据排一下。。。
+使用model.sort(comparator)，实现如下：
+
+Collections.sort(rowMapping, comparator);
+
+
+现在getContentAt(col,row)，会先调用mapRowIndexToModel(row)计算排序后这个位置的值应该从哪儿取。
+
+所以rowMapping很重要。它是个代理。
+我们在add/delete row时修改了list中的数据
+
+同时我们要修改rowMapping中的排序情况。
+
+***********************
+
+场景一：假设在最前面加上空白行：
+
+初始：1，2，3，4，5
+排序后：2，3，1，5，4
+
+插入空白，List变成（空白，1，2，3，4，5）
+
+get(row=1)先前为1，排序后跑到第3的位置，如果在row=0处插入了空白行，那么同时在rowMapping的最前面要加上1，而后面的每个数字都要加1
+变成
+1,3,4,2,6,5
+
+也是说原先的第1，在排序后变成了第3，get(row=3)才能取到1，后来加了空白行，原先的第1在list中变成了第2,现在可以通过get(row=4)取到它（2）
+
+规则一：
+在最前插入
+则将原rowMapping中的所有数字加1，并在rowMapping最前面插入1
+ 或者说是
+ 将所以大于0的数字加1，
+ 并在rowMapping的1号位置插入1
+ 
+*****************************
+
+场景二：假设在第2行前插入空白行
+初始：1，2，3，4，5
+排序后：2，3，1，5，4
+
+List变成（1，空白，2，3，4，5）
+这时候
+第1行还是2（no!插入空白后，2已经成3了），第一行变成3
+第2行变成了新插入的2
+
+3，2，4，1，6，5
+规则二：
+将所有大于1的数字加1
+并在2号位置插入2
+
+由此推出通用规则：
+在list中的n号位置插入空白行。n>=0
+那么先将的有>n的数字加1
+for(i=0;i<rowMapping.size();i++){
+	if(rowMapping.get(i)>n){
+		rowMapping.set(i,rowMppaing.get(i)+1)
+	}
+}
+
+然后在rowMapping.add(n,n+1);
+
+因为rowMapping是redraw时才用到。所以这个过程在更新list后，redraw()之前实现就可以了。
+可惜这个rowMapping是私有的无法访问。
+
+所以要修改KTableSortedModel的源代码，将其变成protected的.
+
+
+====================================================================
+2012-7-1最终的解决方案
+[8, 7, 6, 5, 4, 3, 2, 1]
+[9, 8, 7, 6, 5, 4, 3, 2]
+[9, 8, 7, 6, 5, 4, 3, 1, 2]
+在1前面加,现在n=8
+方案一：
+永远在list中的0号位置插入空白行。
+先将的有的数字加1
+for(i=0;i<rowMapping.size();i++){
+	if(rowMapping.get(i)>n){
+		rowMapping.set(i,rowMppaing.get(i)+1)
+	}
+}
+然后将8号位置后面的元素后移一位
+最后将8号位置放1
+
+方案二：
+永远在list的末尾插入空白行
+然后将8号位置后面的元素后移一位
+将8号位置放9
+方案二胜出
+
+
+---减法
+before=[1, 2, 3, 4, 5, 6, 7, 8]
+3前加空白行
+after =[1, 2, 9, 3, 4, 5, 6, 7, 8]
+现在减去新加的空白行
+先根据3找到下标9，然后从data中移除9
+
+如果要减2呢
+从list中去掉2
+rowMapping中大于2的序号全部减1
+
+
+
+
+

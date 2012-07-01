@@ -1,14 +1,15 @@
 package hello.example.ktable;
 
-import static hello.example.ktable.util.ModelUtil.NO_SELECTION;
 import static hello.example.ktable.util.ModelUtil.calcRefRowNumber;
 import static hello.example.ktable.util.ModelUtil.getRowSelection;
 import static hello.layout.aqua.ImageFactory.ADD;
 import static hello.layout.aqua.ImageFactory.LOGO;
 import static hello.layout.aqua.ImageFactory.SUBTRACT;
 import static hello.layout.aqua.ImageFactory.loadImage;
-
+import hello.example.ktable.sort.KTableSortOnClick;
 import hello.example.ktable.sort.SortComparatorExample;
+import hello.example.ktable.util.ModelUtil;
+import hello.example.ktable.util.RefreshType;
 
 import java.util.List;
 
@@ -26,13 +27,37 @@ import org.eclipse.swt.widgets.ToolItem;
 import de.kupzog.ktable.KTable;
 import de.kupzog.ktable.KTableCellSelectionListener;
 import de.kupzog.ktable.KTableSortComparator;
-import de.kupzog.ktable.KTableSortOnClick;
+import de.kupzog.ktable.KTableSortedModel;
 import de.kupzog.ktable.SWTX;
 
 /**
  * 综合示例，向PL/SQL developer看齐.<br>
  * 目前的问题：<br>
- * 1.在排序的状态下，增加和删除行，排序信息会丢失.
+ * 1.排序时，indicator依然指向先前的行，但是rowSelection不对，应该修改setSelection()方法，要和indicator位置一致
+ * .<br>
+ * 06-28解决过程：<br>
+ * 折腾的一段时间还是自己解决了。<br>
+ * 目前的table有两个listener<br>
+ * 第一个onclick是用来 表头的点击，处理排序专用，第二个onclick是用来处理cell的点击，当点击表头时是跳过的。<br>
+ * 方法是在第一个onclick排序结束后，table.redraw调用之前加入如下代码：<br>
+ * 
+ * <pre>
+ * 
+ * // always keep the same row selected when doing sort.
+ * for (int i = 0; i &lt; model.getRowCount(); i++) {
+ * 	String indicatorCell = (String) model.getContentAt(0, i);
+ * 	if (indicatorCell.equals(&quot;&gt;&quot;)) {
+ * 		// keep selection and indicator on the same row.
+ * 		m_Table.setSelection(2, i, false);
+ * 		break;
+ * 	}
+ * }
+ * </pre>
+ * 
+ * 2.在排序的状态下，增加和删除行，排序信息会丢失:<br>
+ * 看KTableSortOnClick的实现。推测是增加和删除行使model信息发生变化<br>
+ * model中的sortColumn和sortState是否丢失了？<br>
+ * 在refresh()方法中将KTableSortOnClick中的代码调用一遍，重现上次的排序。
  * 
  * @author cyper.yin
  * 
@@ -64,42 +89,49 @@ public class Main {
 				| SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL
 				| SWTX.FILL_WITH_LASTCOL | SWTX.EDIT_ON_KEY);
 		// table.setModel(new SQLResultModel(table));
-		SQLResultModel model = new SQLResultModel(table);
+		final SQLResultModel model = new SQLResultModel(table);
+
+		final KTableSortOnClick sort = new KTableSortOnClick(table,
+				new SortComparatorExample(model, -1,
+						KTableSortComparator.SORT_NONE));
+
 		table.addCellSelectionListener(new KTableCellSelectionListener() {
 			public void updateRowIndicator(int rowNew) {
+				System.out.println("updateRowIndex,row New= " +rowNew+" !!!!!!!!!!!!!!!!!!!!!!");
 				SQLResultModel model = (SQLResultModel) table.getModel();
-				int[] rowsSelected = model.lastRowSelection;
-				if (rowsSelected != null) {
-					for (int i = 0; i < rowsSelected.length; i++) {
-						model.setContentAt(0, rowsSelected[i], " ");
+				for (int i = 0; i < model.getRowCount(); i++) {
+					String indicatorCell = (String) model.getContentAt(0, i);
+					if (indicatorCell.equals(">")) {
+						model.setContentAt(0, i, "");
+						break;
 					}
 				}
 				model.setContentAt(0, rowNew, ">");
-				model.lastRowSelection = table.getRowSelection();
 				table.redraw();
 			}
 
 			public void cellSelected(int col, int row, int statemask) {
-				System.out
-						.println("Cell [" + col + ";" + row + "] selected11.");
-				if (row != 0) {
+				// 点表头的时候row竟然不为0，
+				// 这是因为在KTableSortOnClick中使用了m_Table.setSelection(2, i, false);
+				// 更改的点cell的事件
+				if (model.updateRowIndicatorComplete && sort.called) {
+					System.out.println("model.updateRowIndicatorComplete");
+					model.updateRowIndicatorComplete = false;
+					return;
+				} else if (row != 0) {
 					updateRowIndicator(row);
 				}
 			}
 
 			public void fixedCellSelected(int col, int row, int statemask) {
-				// 当点击表头时，table.getRowSelection()不会变化，先前在哪，现在依然指向哪儿
-				System.out.println("Header [" + col + ";" + row
-						+ "] selected11.");
 				if (row != 0) {
+					System.out.println("fixed cell clicked, but !!!!!!!!!!!!......");
 					updateRowIndicator(row);
 				}
 			}
 		});
-		table.addCellSelectionListener(new KTableSortOnClick(table,
-				new SortComparatorExample(model, -1,
-						KTableSortComparator.SORT_NONE)));
-
+		table.addCellSelectionListener(sort);
+		System.out.println(((KTableSortedModel)table.getModel()).getRowMapping());
 		viewForm.setContent(contentPanel);
 
 		Listener listener = new Listener() {
@@ -111,19 +143,18 @@ public class Main {
 					// 当插入空白行后，row indicator是否指向新的空白行?Yes,!PLD是这么做的
 					// 新插入的空白行没有行号
 					// 其它行的行号保持不变
-					List newList = model.insertBlankRow(refRowNumber);
-					model.refresh(table, newList, refRowNumber);
-					// table.redraw();
+					List newList = model.insertBlankRow();
+					sort.called = false;
+					model.refreshWithSort(table, newList, refRowNumber,RefreshType.ADD);
 
 				} else if (event.widget == sub) {
 					int rowSelectoin = getRowSelection(table);
-					if (rowSelectoin != NO_SELECTION) {
-						// 当删除的是空白行，OK，直接删除,反正它没有行号。
-						// 当删除的是普通行，此时其它行的行号保持不变，但删除这行使行号变得不连续了
-						// 为做到此效果，应该在list中保留此行，为此本屌引入HiddenRow（占着行号但不显示)
-						// 注意rowCount不再是list.size()而是list是排除HiddenRow之后的size。
+					// 当删除的是空白行，OK，直接删除,反正它没有行号。
+					// 当删除的是普通行，此时其它行的行号保持不变，但删除这行使行号变得不连续了
+					if (rowSelectoin != ModelUtil.NO_SELECTION) {
 						List newList = model.deleteRow(rowSelectoin);
-						model.refresh(table, newList, rowSelectoin);
+						sort.called = false;
+						model.refreshWithSort(table, newList, rowSelectoin,RefreshType.SUBTRACT);
 					}
 				}
 
