@@ -1,11 +1,18 @@
-package hello.example.ktable;
+package hello.layout.aqua.sqlwindow;
 
 import static hello.example.ktable.util.ModelUtil.calcRefRowNumber;
 import static hello.example.ktable.util.ModelUtil.getRowSelection;
 import static hello.layout.aqua.ImageFactory.ADD;
-import static hello.layout.aqua.ImageFactory.LOGO;
+import static hello.layout.aqua.ImageFactory.COLUMN_MODE;
+import static hello.layout.aqua.ImageFactory.DOWN1;
+import static hello.layout.aqua.ImageFactory.DOWN2;
+import static hello.layout.aqua.ImageFactory.LOCK;
 import static hello.layout.aqua.ImageFactory.MYTICK;
+import static hello.layout.aqua.ImageFactory.NEXT;
+import static hello.layout.aqua.ImageFactory.PREV;
+import static hello.layout.aqua.ImageFactory.SQL_EDITOR;
 import static hello.layout.aqua.ImageFactory.SUBTRACT;
+import static hello.layout.aqua.ImageFactory.WYJ;
 import static hello.layout.aqua.ImageFactory.loadImage;
 import hello.example.ktable.sort.KTableSortOnClick;
 import hello.example.ktable.sort.SortComparatorExample;
@@ -13,17 +20,23 @@ import hello.example.ktable.util.ModelUtil;
 import hello.example.ktable.util.RefreshType;
 import hello.example.ktable.util.Row;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ViewForm;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
@@ -33,69 +46,136 @@ import de.kupzog.ktable.KTableCellSelectionListener;
 import de.kupzog.ktable.KTableSortComparator;
 import de.kupzog.ktable.SWTX;
 
-/**
- * 综合示例，向PL/SQL developer看齐.<br>
- * 目前的问题：<br>
- * 1.排序时，indicator依然指向先前的行，但是rowSelection不对，应该修改setSelection()方法，要和indicator位置一致
- * .<br>
- * 06-28解决过程：<br>
- * 折腾的一段时间还是自己解决了。<br>
- * 目前的table有两个listener<br>
- * 第一个onclick是用来 表头的点击，处理排序专用，第二个onclick是用来处理cell的点击，当点击表头时是跳过的。<br>
- * 方法是在第一个onclick排序结束后，table.redraw调用之前加入如下代码：<br>
- * 
- * <pre>
- * 
- * // always keep the same row selected when doing sort.
- * for (int i = 0; i &lt; model.getRowCount(); i++) {
- * 	String indicatorCell = (String) model.getContentAt(0, i);
- * 	if (indicatorCell.equals(&quot;&gt;&quot;)) {
- * 		// keep selection and indicator on the same row.
- * 		m_Table.setSelection(2, i, false);
- * 		break;
- * 	}
- * }
- * </pre>
- * 
- * 2.在排序的状态下，增加和删除行，排序信息会丢失:<br>
- * 解决办法<br>
- * 在refresh方法中手动更新rowMapping，需要先源码，让rowMapping在子类中可以直接访问.
- * 
- * @author cyper.yin
- * 
- */
-public class Main {
-	public static final Display display = new Display();
-	public final Shell shell = new Shell(display);
-	private ViewForm viewForm = null;
+public class SQLWindow {
+	public static int seq = 1;
+	public final static int[] DEFAULT_WEIGHTS = new int[] { 30, 70 };
+	private CTabFolder tabFolder;
+	public List<CTabItem> tabItemList = new ArrayList<CTabItem>();
+	public List<Text> textViewerList = new ArrayList<Text>();
+	public List<KTable> tableList = new ArrayList<KTable>();
+	private static SQLWindow instance = null;
+	
+	
+	private SQLWindow(CTabFolder tabFolder) {
+		this.tabFolder = tabFolder;
+	}
+	public static SQLWindow getInstace(CTabFolder tabFolder){
+		if (instance==null) {
+			instance = new SQLWindow(tabFolder);
+		}
+		return instance;
+	}
+	
+	
+	public CTabItem createNewTabItem(String title){
+		// right top
+		// sql editor
+		final CTabItem tabItem = new CTabItem(tabFolder, SWT.None);
+		tabItem.setText(title);
+		tabItem.setImage(loadImage(SQL_EDITOR));
 
-	public Main() {
-		configureShell();
-		viewForm = new ViewForm(shell, SWT.NONE);
+		SashForm right = new SashForm(tabFolder, SWT.VERTICAL);
+		right.setLayout(new FillLayout());
+
+		final Text textViewer = new Text(right, SWT.MULTI | SWT.BORDER);
+
+		// =====================result window
+		
+		/*
+		Composite rightBottom = new Composite(right, SWT.BORDER);
+		GridLayout gl = new GridLayout(1, true);
+		rightBottom.setLayout(gl);
+		Composite buttonPanel = new Composite(rightBottom, SWT.BORDER);
+		buttonPanel.setLayout(new RowLayout());
+		buttonPanel.setLayoutData(gd4text());
+		{
+			Button b1 = new Button(buttonPanel, SWT.FLAT);
+			b1.setImage(ImageFactory.loadImage(SERVER));
+		}
+		{
+			Button b1 = new Button(buttonPanel, SWT.FLAT);
+			b1.setImage(ImageFactory.loadImage(SERVER));
+		}
+		{
+			Button b1 = new Button(buttonPanel, SWT.FLAT);
+			b1.setImage(ImageFactory.loadImage(SERVER));
+		}
+
+		// results
+		TableViewer tv = new TableViewer(rightBottom, SWT.FULL_SELECTION);
+		tv.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
+		Table t = tv.getTable();
+		for (int i = 0; i < th.length; i++) {
+			new TableColumn(t, SWT.LEFT).setText(th[i]);
+			t.getColumn(i).pack();// pack means setVisible(true)
+		}
+		t.setHeaderVisible(true);
+		t.setLinesVisible(true);
+		tv.setContentProvider(new MyContentProvider());
+		tv.setLabelProvider(new MyLabelProvider());
+		tv.setInput(PersonFactory.createPersons(10));
+
+		right.setWeights(SQLWindow.DEFAULT_WEIGHTS);
+		tabItem.setControl(right);
+		tabItem.addDisposeListener(new DisposeListener() {
+			public void widgetDisposed(DisposeEvent e) {
+				System.out.println("I am disposed.");
+				tabItemList.remove(tabItem);
+			}
+		});
+		tabItem.setData("tv",tv);
+		tabItem.setData("text",text);
+		*/
+		ViewForm viewForm = new ViewForm(right, SWT.NONE);
 		viewForm.setTopCenterSeparate(true);
 
 		// tool bar
 		ToolBar toolbar = new ToolBar(viewForm, SWT.FLAT);
+		final ToolItem lock = new ToolItem(toolbar, SWT.PUSH);
+		lock.setImage(loadImage(LOCK));
+		
+		
 		final ToolItem add = new ToolItem(toolbar, SWT.PUSH);
 		add.setImage(loadImage(ADD));
+
 		final ToolItem sub = new ToolItem(toolbar, SWT.PUSH);
 		sub.setImage(loadImage(SUBTRACT));
+
+		
 		final ToolItem save = new ToolItem(toolbar, SWT.PUSH);
 		save.setImage(loadImage(MYTICK));
 		
+		ToolItem down1 = new ToolItem(toolbar, SWT.PUSH);
+		down1.setImage(loadImage(DOWN1));
+		
+		ToolItem down2 = new ToolItem(toolbar, SWT.PUSH);
+		down2.setImage(loadImage(DOWN2));
+		
+		ToolItem wyj = new ToolItem(toolbar, SWT.PUSH);
+		wyj.setImage(loadImage(WYJ));
+		ToolItem cm = new ToolItem(toolbar, SWT.PUSH);
+		cm.setImage(loadImage(COLUMN_MODE));
+		ToolItem prev = new ToolItem(toolbar, SWT.PUSH);
+		prev.setImage(loadImage(PREV));
+		ToolItem next = new ToolItem(toolbar, SWT.PUSH);
+		next.setImage(loadImage(NEXT));
+		
+		
 		viewForm.setTopLeft(toolbar);
-
-		// table
+		
+		
+		//swt table
+		
 		Composite contentPanel = new Composite(viewForm, SWT.NONE);
+//		contentPanel.setLayout(new GridLayout(1, true));
 		contentPanel.setLayout(new FillLayout());
-
+		
 		final KTable table = new KTable(contentPanel, SWT.FULL_SELECTION
 				| SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL
 				| SWTX.FILL_WITH_LASTCOL | SWTX.EDIT_ON_KEY);
-		// table.setModel(new SQLResultModel(table));
-		final SQLResultModel model = new SQLResultModel(table);
-		model.executeSQL("select * from STAFF");
 		
+		final SQLResultModel model = new SQLResultModel(table);
+
 		final KTableSortOnClick sort = new KTableSortOnClick(table,
 				new SortComparatorExample(model, -1,
 						KTableSortComparator.SORT_NONE));
@@ -117,7 +197,7 @@ public class Main {
 				int actualRow = model.mapRowIndexToModel(row);
 				System.out.println("checkList=" + model.checkList);
 				updateModifiedCell(model, col + "/" + actualRow);
-				shell.setText("[" + row + "," + col + "]");
+//				shell.setText("[" + row + "," + col + "]");
 				// System.out
 				// .println("Cell [" + col + ";" + row + "] selected11.");
 				// 点表头的时候row竟然不为0，
@@ -217,34 +297,33 @@ public class Main {
 		sub.addListener(SWT.Selection, listener);
 		save.addListener(SWT.Selection, listener);
 
-	}
-
-	/**
-	 * @param args
-	 */
-	public void open() {
-		shell.open();
-		while (!shell.isDisposed()) {
-			if (!display.readAndDispatch()) {
-				display.sleep();
+		
+		
+		viewForm.setContent(contentPanel);
+		
+		
+		
+		//----important------------
+		right.setWeights(DEFAULT_WEIGHTS);
+		tabItem.setControl(right);
+		
+		tabItemList.add(tabItem);
+		textViewerList.add(textViewer);
+		tableList.add(table);
+		
+		tabItem.addDisposeListener(new DisposeListener() {
+			public void widgetDisposed(DisposeEvent e) {
+				System.out.println("I am disposed.");
+				tabItemList.remove(tabItem);
+				textViewerList.remove(textViewer);
+				tableList.remove(table);
 			}
-		}
-		display.dispose();
+		});
+		
+		tabFolder.setSelection(tabItem);
+		
+		return tabItem;
 	}
-
-	public static void main(String[] args) {
-		Main test = new Main();
-		test.open();
-	}
-
-	protected void configureShell() {
-		shell.setText("KTable Example");
-		shell.setImage(loadImage(LOGO));
-		// shell.setSize(500,600);
-		shell.setLayout(new FillLayout());
-		// shell.pack();
-	}
-
 	/**
 	 * 持久化先前可能修改过的单元格.同时将将要修改的单元格newKey加入观察列表.
 	 * 
@@ -279,4 +358,59 @@ public class Main {
 			model.checkList.add(newKey);
 		}
 	}
+//
+//	class MyLabelProvider implements ITableLabelProvider {
+//		public void removeListener(ILabelProviderListener listener) {
+//		}
+//
+//		public boolean isLabelProperty(Object element, String property) {
+//			return false;
+//		}
+//
+//		public void dispose() {
+//		}
+//
+//		public void addListener(ILabelProviderListener listener) {
+//		}
+//
+//		// 其实LabelProvider是用来决定如何显示tbody中每个td中的数据的
+//		public String getColumnText(Object element, int columnIndex) {
+//			// List<Person> list = (List<Person>) element;
+//			// element是集合中的一项目元素（实际类型由ContentProvider决定
+//			Person p = (Person) element;
+//			switch (columnIndex) {
+//			case 0:
+//				return String.valueOf(p.getId());
+//			case 1:
+//				return p.getName();
+//			case 2:
+//				return p.getGender();
+//			case 3:
+//				return p.getColor();
+//			default:
+//				return null;
+//			}
+//		}
+//
+//		public Image getColumnImage(Object element, int columnIndex) {
+//			return null;
+//		}
+//	}
+//
+//	class MyContentProvider implements IStructuredContentProvider {
+//		public void dispose() {
+//		}
+//
+//		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+//		}
+//
+//		// 就是把Input传成一个数组对象，便于LabelProvider使用
+//		public Object[] getElements(Object inputElement) {
+//			List<Person> list = (List<Person>) inputElement;
+//			// Object[] result = new Object[list.size()];
+//			// list.toArray(result);
+//			// return result;
+//			return list.toArray();
+//		}
+//	}
 }

@@ -1,4 +1,4 @@
-package hello.example.ktable;
+package hello.layout.aqua.sqlwindow;
 
 import hello.example.ktable.dao.MyDao;
 import hello.example.ktable.util.BlankRow;
@@ -58,10 +58,8 @@ public class SQLResultModel extends KTableSortedModel {
 					| TextCellRenderer.INDICATION_FOCUS_ROW
 					| FixedCellRenderer.INDICATION_SORT);
 
-//	private final TextCellRenderer m_textRenderer = new TextCellRenderer(
-//			TextCellRenderer.INDICATION_FOCUS_ROW);
 	private final TextCellRenderer m_textRenderer = new TextCellRenderer(
-			/*TextCellRenderer.INDICATION_COMMENT|*/TextCellRenderer.INDICATION_FOCUS);
+			TextCellRenderer.INDICATION_FOCUS);
 	public List<Row> origin = new ArrayList<Row>();
 	public List<Row> data = Collections.synchronizedList(new ArrayList<Row>());
 
@@ -72,7 +70,6 @@ public class SQLResultModel extends KTableSortedModel {
 			.synchronizedSet(new HashSet<String>());
 
 	private KTable table;
-
 	/**
 	 * Initialize the base implementation.
 	 */
@@ -85,8 +82,6 @@ public class SQLResultModel extends KTableSortedModel {
 		List<Row> list = new MyDao().querySql(sql);
 		refreshWithSort(list, 1, RefreshType.INIT);
 	}
-
-	
 
 	/**
 	 * after list changed, we need to call this method. it will redraw the UI.
@@ -109,7 +104,7 @@ public class SQLResultModel extends KTableSortedModel {
 
 		this.resultCount = list.size();// ModelUtil.getRowCountWithHeaderRow(list);
 
-		if (tableHeader == null) {
+		if (/* tableHeader == null */type == RefreshType.INIT) {
 			setColumnWidth(0, 20);
 			setColumnWidth(1, 40);
 			for (int i = 0; i < list.size(); i++) {
@@ -122,7 +117,8 @@ public class SQLResultModel extends KTableSortedModel {
 				}
 			}
 		}
-		if (resultCount>0 && rowMapping == null) {
+
+		if (resultCount > 0 && type == RefreshType.INIT) {
 			initRowMapping();
 		}
 
@@ -295,7 +291,11 @@ public class SQLResultModel extends KTableSortedModel {
 	}
 
 	public int doGetColumnCount() {
-		return tableHeader!=null?tableHeader.length:0; /* + getFixedColumnCount(); */
+		return tableHeader != null ? tableHeader.length : 0; /*
+															 * +
+															 * getFixedColumnCount
+															 * ();
+															 */
 	}
 
 	public int getFixedHeaderColumnCount() {

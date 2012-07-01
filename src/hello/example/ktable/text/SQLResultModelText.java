@@ -95,7 +95,7 @@ public class SQLResultModelText extends KTableDefaultModel {
 	public SQLResultModelText(KTable table) {
 		setColumnWidth(0, 20);
 		setColumnWidth(1, 40);
-		refresh(table, new MyDao().query("ORG"), 1);
+		refresh(table, new MyDao().querySql("selec * from ORG"), 1);
 	}
 
 	/**

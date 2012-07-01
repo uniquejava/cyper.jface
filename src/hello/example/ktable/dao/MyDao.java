@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MyDao {
-	public List<Row> query(String tableName) {
+	public List<Row> querySql(String sql) {
 
 		List<Row> result = new ArrayList<Row>();
 		Connection conn = null;
@@ -26,7 +26,7 @@ public class MyDao {
 							"jdbc:db2://localhost:50000/SAMPLE:retrieveMessagesFromServerOnGetMessage=true;currentSchema=CYPER.YIN;",
 							"db2admin", "db2admin");
 			stmt = conn.createStatement();
-			rs = stmt.executeQuery("select * from " + tableName);
+			rs = stmt.executeQuery(sql);
 
 			ResultSetMetaData meta = rs.getMetaData();
 			int count = meta.getColumnCount();
@@ -73,7 +73,7 @@ public class MyDao {
 
 	public static void main(String[] args) {
 		MyDao dao = new MyDao();
-		List<Row> list = dao.query("EMPLOYEE");
+		List<Row> list = dao.querySql("select * from EMPLOYEE");
 		for (Row row : list) {
 //			for (Iterator it = row.keySet().iterator(); it.hasNext();) {
 //				String key = (String) it.next();

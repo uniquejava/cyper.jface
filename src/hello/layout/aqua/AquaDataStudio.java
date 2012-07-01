@@ -6,15 +6,17 @@ import static hello.layout.aqua.ImageFactory.SERVER;
 import static hello.layout.aqua.util.GridDataFactory.gd4text;
 import hello.layout.aqua.action.CommitSQLAction;
 import hello.layout.aqua.action.ExecuteSQLAction;
+import hello.layout.aqua.action.QueryDataAction;
 import hello.layout.aqua.action.RegisterServerAction;
 import hello.layout.aqua.action.RollbackSQLAction;
-import hello.layout.aqua.dialog.SQLWindow;
 import hello.layout.aqua.scriptsView.ScriptsTreeContentProvider;
 import hello.layout.aqua.scriptsView.ScriptsTreeLabelProvider;
 import hello.layout.aqua.serverView.ServerTreeContentProvider;
 import hello.layout.aqua.serverView.ServerTreeLabelProvider;
 import hello.layout.aqua.serverView.node.NodeFactory;
+import hello.layout.aqua.sqlwindow.SQLWindow;
 
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -41,7 +43,8 @@ public class AquaDataStudio {
 	public final Display display = new Display();
 	public final Shell shell = new Shell(display);
 	public CTabFolder tabFolder = null;
-	
+	public TreeViewer serverTree;
+
 	public AquaDataStudio() {
 		configureShell();
 		createMenuBar();
@@ -76,10 +79,12 @@ public class AquaDataStudio {
 						.setImage(ImageFactory.loadImage(display, SERVER));
 				Composite panel = new Composite(tabFolder, SWT.NONE);
 				panel.setLayout(new FillLayout());
-				TreeViewer tv = new TreeViewer(panel);
-				tv.setContentProvider(new ServerTreeContentProvider());
-				tv.setLabelProvider(new ServerTreeLabelProvider());
-				tv.setInput(NodeFactory.createNodes());
+				serverTree = new TreeViewer(panel);
+				serverTree.setContentProvider(new ServerTreeContentProvider());
+				serverTree.setLabelProvider(new ServerTreeLabelProvider());
+				serverTree.setInput(NodeFactory.createNodes());
+				createContextMenu(panel);
+				
 				serversTabItem.setControl(panel);
 			}
 
@@ -120,52 +125,58 @@ public class AquaDataStudio {
 
 		}
 		{
-			
+
 			// right top
 			// ==================================================
 			tabFolder = new CTabFolder(form, SWT.CLOSE | SWT.BORDER);
 			tabFolder.setLayout(new FillLayout());
 			tabFolder.setSimple(false);
 			tabFolder.setMaximizeVisible(true);
-			
-			
-			SQLWindow sw =  new SQLWindow(tabFolder);
-			sw.createNewTabItem("11111.sql");
-			sw.createNewTabItem("New SQL.sql");
-			
+
+//			SQLWindow sw = new SQLWindow(tabFolder);
+//			sw.createNewTabItem("11111.sql");
+//			sw.createNewTabItem("New SQL.sql");
+
 			tabFolder.setSelection(0);
-			tabFolder.addCTabFolder2Listener(new CTabFolder2Adapter(){
+			tabFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {
 				@Override
 				public void maximize(CTabFolderEvent event) {
 					tabFolder.setMaximized(true);
 					CTabItem[] items = tabFolder.getItems();
-					if (items != null && items.length>0) {
+					if (items != null && items.length > 0) {
 						for (int i = 0; i < items.length; i++) {
 							SashForm right = (SashForm) items[i].getControl();
-							right.setWeights(new int[] { 1000,0 });
+							right.setWeights(new int[] { 1000, 0 });
 						}
 					}
 				}
-				
+
 				@Override
 				public void restore(CTabFolderEvent event) {
 					tabFolder.setMinimized(false);
 					tabFolder.setMaximized(false);
 					CTabItem[] items = tabFolder.getItems();
-					if (items != null && items.length>0) {
+					if (items != null && items.length > 0) {
 						for (int i = 0; i < items.length; i++) {
 							SashForm right = (SashForm) items[i].getControl();
-							//show result window if it's hidden.
+							// show result window if it's hidden.
 							if (right.getWeights()[1] == 0) {
-								right.setWeights(new int[] { 50, 50 });
-							} 
+								right.setWeights(SQLWindow.DEFAULT_WEIGHTS);
+							}
 						}
 					}
 				}
 			});
-			
+
 		}
 		form.setWeights(new int[] { 20, 80 });
+	}
+
+	private void createContextMenu(Composite parent) {
+		MenuManager top = new MenuManager();
+		top.add(new QueryDataAction(this));
+		Menu popupMenu = top.createContextMenu(parent);
+		serverTree.getTree().setMenu(popupMenu);
 	}
 
 	public void open() {
@@ -199,9 +210,7 @@ public class AquaDataStudio {
 		manager.add(new ExecuteSQLAction(this));
 		manager.add(new CommitSQLAction(this));
 		manager.add(new RollbackSQLAction(this));
-		
-		
-		
+
 		manager.update(true);
 		// ToolItem registerServer = new ToolItem(toolbar, SWT.PUSH);
 		// registerServer.setImage(ImageFactory

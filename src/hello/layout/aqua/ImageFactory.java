@@ -34,6 +34,8 @@ public class ImageFactory {
 	public final static String PREV = "up_1616.gif";
 	public final static String NEXT = "down_1616.gif";
 	public final static String ROW_INDICATOR = "row_indicator.gif";
+	public final static String NODE_TABLE = "table_icon.gif";
+	
 
 	private ImageFactory() {
 	}

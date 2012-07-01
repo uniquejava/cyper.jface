@@ -62,7 +62,7 @@ public class SQLResultModelSort extends KTableSortedModel {
 	public SQLResultModelSort() {
 		setColumnWidth(0, 20);
 		setColumnWidth(1, 40);
-		list = new MyDao().query("ORG");
+		list = new MyDao().querySql("select * from ORG");
 		this.resultCount = list.size() - 1;
 		for (int i = 0; i < list.size(); i++) {
 			Map row = list.get(i);
