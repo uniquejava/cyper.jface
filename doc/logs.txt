@@ -1,4 +1,12 @@
-﻿16:32 2012-7-1
+﻿1:46 2012-7-2
+将KTable已经集成到Cyper Data Studio中了。
+能连上本地数据库，进行Query data了！
+今天向前了一大步。
+现在郁闷的是。用JDBC始终连不上生产库！老报xxx is an undefined name.郁闷
+
+
+
+16:32 2012-7-1
 成功了！add/delete/sort终于TMD做好了！
 蛋疼的rowMapping终于被我搞定了。大改！
 不再使用父类的initialize()，甚至不使用父类的setContentAt().
