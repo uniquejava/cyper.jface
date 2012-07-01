@@ -1,0 +1,23 @@
+减一行
+从data list中remove掉
+
+before=[1, 2, 3, 4, 5, 6, 7, 8]
+3前加空白行
+after =[1, 2, 9, 3, 4, 5, 6, 7, 8]
+现在减去新加的空白行
+
+data.remove(9)
+
+rowMapping变成1..8
+
+content不变（要变得话也是将9/开头的key去掉
+
+after =[1, 2, 9, 3, 4, 5, 6, 7, 8]
+现在减去2
+data.remove(2)
+rowMapping中大于2的序号全部减1
+after =[1, 8, 2, 3, 4, 5, 6, 7
+content的变化是2之后的mapping全变了
+
+不好做呀。
+除非及时的将变化设置到list中去

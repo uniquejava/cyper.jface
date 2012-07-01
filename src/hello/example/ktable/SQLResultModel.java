@@ -1,14 +1,3 @@
-/*
- * Copyright (C) 2004 by Friederich Kupzog Elektronik & Software
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- 
- Author: Friederich Kupzog  
- fkmk@kupzog.de
- www.kupzog.de/fkmk
- */
 package hello.example.ktable;
 
 import hello.example.ktable.dao.MyDao;
@@ -18,10 +7,13 @@ import hello.example.ktable.util.RefreshType;
 import hello.example.ktable.util.Row;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import org.eclipse.core.runtime.Assert;
@@ -38,7 +30,9 @@ import de.kupzog.ktable.renderers.FixedCellRenderer;
 import de.kupzog.ktable.renderers.TextCellRenderer;
 
 /**
- * @author Friederich Kupzog
+ * 
+ * @author cyper.yin
+ * 
  */
 public class SQLResultModel extends KTableSortedModel {
 
@@ -55,9 +49,9 @@ public class SQLResultModel extends KTableSortedModel {
 	// public int[] lastRowSelection = { 1 };
 
 	// 示例中就有的，ktable只认content，它要从中取出数据展示，key为col + '/' + row
-	private HashMap content = new HashMap();
+	public HashMap content = new HashMap();
 
-	public boolean updateRowIndicatorComplete = false;
+	public boolean updateRowIndicatorInRefreshMethod = false;
 
 	private final FixedCellRenderer m_fixedRenderer = new FixedCellRenderer(
 			FixedCellRenderer.STYLE_FLAT
@@ -66,14 +60,29 @@ public class SQLResultModel extends KTableSortedModel {
 
 	private final TextCellRenderer m_textRenderer = new TextCellRenderer(
 			TextCellRenderer.INDICATION_FOCUS_ROW);
-	public List<Row> data = new ArrayList<Row>();
+	public List<Row> origin = new ArrayList<Row>();
+	public List<Row> data = Collections.synchronizedList(new ArrayList<Row>());
+
+	// col + "/" + row
+	// 观察列表，处于观察列表上的cell，在”失去焦点“时要检查数据是否有修改
+	// 现在无法捕获”失去焦点“的事件，所以这个检查工作放在其它控件单击的时候
+	public Set<String> checkList = Collections
+			.synchronizedSet(new HashSet<String>());
 
 	/**
 	 * Initialize the base implementation.
 	 */
 	public SQLResultModel(KTable table) {
-		refreshWithSort(table, new MyDao().query("ORG"), 1, RefreshType.INIT);
-		// refreshWithoutSort(table, new MyDao().query("ORG"), 1, true);
+		origin = new MyDao().query("STAFF");
+
+		// 拷贝一份.
+		List<Row> clone = new ArrayList<Row>();
+		for (Iterator it = origin.iterator(); it.hasNext();) {
+			Row row = (Row) it.next();
+			clone.add((Row) row.clone());
+		}
+
+		refreshWithSort(table, clone, 1, RefreshType.INIT);
 	}
 
 	/**
@@ -102,37 +111,49 @@ public class SQLResultModel extends KTableSortedModel {
 			initRowMapping();
 		}
 
-		populateDataInNaturalOrder(list);
+		if (type == RefreshType.INIT || type == RefreshType.SUBTRACT) {
+			populateDataInNaturalOrder(list);
+		} else if (type == RefreshType.ADD) {
+			// update only the newly added blank row
+			int listIndex = data.size() - 1;
+			Row rowInList = data.get(listIndex);
+			int colj = 0;
+			for (Iterator it = rowInList.keySet().iterator(); it.hasNext();) {
+				String key = (String) it.next();
+				// without row mapping!
+				setNatureContentAt(colj, listIndex, rowInList.get(key));
+				colj++;
+			}
+		}
 
 		int n = indicatorRowNumber;
 
-		System.out.println("n=" + n);
-		System.out.println("before=" + rowMapping);
-		
-		
-		//完全由哥来控制rowMapping
+		// System.out.println("n=" + n);
+		// System.out.println("before=" + rowMapping);
+
+		// 完全由哥来控制rowMapping
 		if (type == RefreshType.ADD) {
 			rowMapping.add(0);// 扩容.
-			//n之后的元素顺次后移
+			// n之后的元素顺次后移
 			for (int i = rowMapping.size() - 1; i >= n; i--) {
 				rowMapping.set(i, rowMapping.get(i - 1));
 			}
-			//在n号位插入新的空白行的序号
+			// 在n号位插入新的空白行的序号
 			rowMapping.set(n - 1, rowMapping.size());
-			
-		}else if(type == RefreshType.SUBTRACT){
-			//移除n号位的mapping
-			int removed = (Integer) rowMapping.remove(n-1);
-			
-			//比n号位的值大于1的值全部减一.
+
+		} else if (type == RefreshType.SUBTRACT) {
+			// 移除n号位的mapping
+			int removed = (Integer) rowMapping.remove(n - 1);
+
+			// 比n号位的值大于1的值全部减一.
 			for (int i = 0; i < rowMapping.size(); i++) {
 				int x = (Integer) rowMapping.get(i);
-				if(x > removed){
-					rowMapping.set(i, x-1);
+				if (x > removed) {
+					rowMapping.set(i, x - 1);
 				}
 			}
 		}
-		System.out.println("after =" + rowMapping);
+		// System.out.println("after =" + rowMapping);
 
 		// we don't want the default foreground color on text cells,
 		// so we change it:
@@ -143,11 +164,14 @@ public class SQLResultModel extends KTableSortedModel {
 		// so let's setModel for table first
 		table.setModel(this);
 		table.setSelection(2, indicatorRowNumber, false);
-		updateRowIndicator(indicatorRowNumber);
+		// updateRowIndicator(indicatorRowNumber);
 		table.redraw();
 
 	}
 
+	/**
+	 * 这是从父类的initialize()方法中抓取的一段
+	 */
 	private void initRowMapping() {
 		int numberOfElems = data.size() - 1;
 		rowMapping = new Vector(numberOfElems);
@@ -156,21 +180,18 @@ public class SQLResultModel extends KTableSortedModel {
 		}
 	}
 
+	/**
+	 * 以data list中数据的自然顺序实例化rowMapping.
+	 * 
+	 * @param list
+	 */
 	private void populateDataInNaturalOrder(List<Row> list) {
-		System.out.println("here =" + rowMapping);
-		// 这里会修改rowMapping的值，如果容量不够，会自动扩容
-		// Cyper版的setContentAt()，无需要rowMapping
+		// Cyper版的setNatureContentAt()，无需要rowMapping
 		// listIndex就是list的遍历下标，值域为[0,list.size());
 		// 每次循环都会自增一次.
 		int listIndex = -1;
 		for (Row rowInList : list) {
 			listIndex++;
-			// if (listIndex == indicatorRowNumber) {
-			// rowInList.put(Row.KEY_INDICATOR, ">");
-			// } else {
-			// rowInList.put(Row.KEY_INDICATOR, "");
-			// }
-
 			int colj = 0;
 			for (Iterator it = rowInList.keySet().iterator(); it.hasNext();) {
 				String key = (String) it.next();
@@ -179,11 +200,11 @@ public class SQLResultModel extends KTableSortedModel {
 				colj++;
 			}
 		}
-		System.out.println("there=" + rowMapping);
+		// System.out.println("there=" + rowMapping);
 	}
 
 	public void updateRowIndicator(int rowNew) {
-		System.out.println("updateRowIndex in Sort !!!!!!!!!!!!!!!!!!!!!!");
+		// System.out.println("updateRowIndex in Sort !!!!!!!!!!!!!!!!!!!!!!");
 		// always keep the same row selected when doing sort.
 		for (int i = 0; i < this.getRowCount(); i++) {
 			String indicatorCell = (String) this.getContentAt(0, i);
@@ -193,7 +214,7 @@ public class SQLResultModel extends KTableSortedModel {
 			}
 		}
 		this.setContentAt(0, rowNew, ">");
-		updateRowIndicatorComplete = true;
+		updateRowIndicatorInRefreshMethod = true;
 	}
 
 	public void setNatureContentAt(int col, int row, Object value) {
@@ -207,21 +228,20 @@ public class SQLResultModel extends KTableSortedModel {
 		String erg = (String) content.get(col + "/" + row);
 		if (erg != null)
 			return erg;
-		return col + "/" + row;
+		return "";
 	}
 
 	public List insertBlankRow() {
-		System.out.println("beforeinsert=" + rowMapping);
 		data.add(new BlankRow(tableHeader));
-		System.out.println("after insert=" + rowMapping);
 		return data;
 	}
 
 	public List deleteRow(int refRowNumber) {
 		// the first row is always header row
 		Assert.isTrue(refRowNumber > 0);
-		int actualIndex = (Integer) rowMapping.get(refRowNumber-1);
-		System.out.println("remove actualIndex=(" + actualIndex+") from data list");
+		int actualIndex = (Integer) rowMapping.get(refRowNumber - 1);
+		System.out.println("remove actualIndex=(" + actualIndex
+				+ ") from data list");
 		data.remove(actualIndex);
 		return data;
 	}

@@ -1,5 +1,6 @@
 package hello.example.ktable.dao;
 
+import hello.example.ktable.util.DataRow;
 import hello.example.ktable.util.HeaderRow;
 import hello.example.ktable.util.Row;
 
@@ -42,7 +43,7 @@ public class MyDao {
 			int rowNum = 0;
 			while (rs.next()) {
 				rowNum++;
-				Row row = new Row();
+				Row row = new DataRow();
 				row.put(Row.KEY_INDICATOR, /*rowNum == 1 ? ">" : */"");
 				row.put(Row.KEY_ROW_NUMBER, String.valueOf(rowNum));
 

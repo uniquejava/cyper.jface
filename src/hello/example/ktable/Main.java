@@ -4,13 +4,16 @@ import static hello.example.ktable.util.ModelUtil.calcRefRowNumber;
 import static hello.example.ktable.util.ModelUtil.getRowSelection;
 import static hello.layout.aqua.ImageFactory.ADD;
 import static hello.layout.aqua.ImageFactory.LOGO;
+import static hello.layout.aqua.ImageFactory.MYTICK;
 import static hello.layout.aqua.ImageFactory.SUBTRACT;
 import static hello.layout.aqua.ImageFactory.loadImage;
 import hello.example.ktable.sort.KTableSortOnClick;
 import hello.example.ktable.sort.SortComparatorExample;
 import hello.example.ktable.util.ModelUtil;
 import hello.example.ktable.util.RefreshType;
+import hello.example.ktable.util.Row;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
@@ -25,9 +28,9 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
 import de.kupzog.ktable.KTable;
+import de.kupzog.ktable.KTableCellDoubleClickListener;
 import de.kupzog.ktable.KTableCellSelectionListener;
 import de.kupzog.ktable.KTableSortComparator;
-import de.kupzog.ktable.KTableSortedModel;
 import de.kupzog.ktable.SWTX;
 
 /**
@@ -55,9 +58,8 @@ import de.kupzog.ktable.SWTX;
  * </pre>
  * 
  * 2.在排序的状态下，增加和删除行，排序信息会丢失:<br>
- * 看KTableSortOnClick的实现。推测是增加和删除行使model信息发生变化<br>
- * model中的sortColumn和sortState是否丢失了？<br>
- * 在refresh()方法中将KTableSortOnClick中的代码调用一遍，重现上次的排序。
+ * 解决办法<br>
+ * 在refresh方法中手动更新rowMapping，需要先源码，让rowMapping在子类中可以直接访问.
  * 
  * @author cyper.yin
  * 
@@ -78,7 +80,9 @@ public class Main {
 		add.setImage(loadImage(ADD));
 		final ToolItem sub = new ToolItem(toolbar, SWT.PUSH);
 		sub.setImage(loadImage(SUBTRACT));
-
+		final ToolItem save = new ToolItem(toolbar, SWT.PUSH);
+		save.setImage(loadImage(MYTICK));
+		
 		viewForm.setTopLeft(toolbar);
 
 		// table
@@ -94,10 +98,8 @@ public class Main {
 		final KTableSortOnClick sort = new KTableSortOnClick(table,
 				new SortComparatorExample(model, -1,
 						KTableSortComparator.SORT_NONE));
-
 		table.addCellSelectionListener(new KTableCellSelectionListener() {
 			public void updateRowIndicator(int rowNew) {
-				System.out.println("updateRowIndex,row New= " +rowNew+" !!!!!!!!!!!!!!!!!!!!!!");
 				SQLResultModel model = (SQLResultModel) table.getModel();
 				for (int i = 0; i < model.getRowCount(); i++) {
 					String indicatorCell = (String) model.getContentAt(0, i);
@@ -111,27 +113,51 @@ public class Main {
 			}
 
 			public void cellSelected(int col, int row, int statemask) {
+				int actualRow = model.mapRowIndexToModel(row);
+				System.out.println("checkList=" + model.checkList);
+				updateModifiedCell(model, col + "/" + actualRow);
+				shell.setText("[" + row + "," + col + "]");
+				// System.out
+				// .println("Cell [" + col + ";" + row + "] selected11.");
 				// 点表头的时候row竟然不为0，
 				// 这是因为在KTableSortOnClick中使用了m_Table.setSelection(2, i, false);
 				// 更改的点cell的事件
-				if (model.updateRowIndicatorComplete && sort.called) {
-					System.out.println("model.updateRowIndicatorComplete");
-					model.updateRowIndicatorComplete = false;
+				// FIXME 这段我都看不懂写的啥了.
+				// 如果在refresh的时候已经设定了rowIndicator
+				/*if (model.updateRowIndicatorInRefreshMethod && sort.called  ) {
+					System.out.println("model.updateRowIndicatorInRefreshMethod");
+					model.updateRowIndicatorInRefreshMethod = false;
 					return;
-				} else if (row != 0) {
+				} else*/
+				if (row != 0) {
 					updateRowIndicator(row);
 				}
+
 			}
 
 			public void fixedCellSelected(int col, int row, int statemask) {
+				updateModifiedCell(model, null);
 				if (row != 0) {
-					System.out.println("fixed cell clicked, but !!!!!!!!!!!!......");
 					updateRowIndicator(row);
 				}
 			}
 		});
 		table.addCellSelectionListener(sort);
-		System.out.println(((KTableSortedModel)table.getModel()).getRowMapping());
+		table.addCellDoubleClickListener(new KTableCellDoubleClickListener() {
+			@Override
+			public void fixedCellDoubleClicked(int coxl, int rowx, int statemask) {
+				updateModifiedCell(model, null);
+			}
+
+			@Override
+			public void cellDoubleClicked(int col, int row, int statemask) {
+				// System.out.println("Cell [" + col + ";" + row
+				// + "] double clicked.");
+				int actualRow = model.mapRowIndexToModel(row);
+				updateModifiedCell(model, col + "/" + actualRow);
+			}
+		});
+
 		viewForm.setContent(contentPanel);
 
 		Listener listener = new Listener() {
@@ -140,28 +166,56 @@ public class Main {
 				SQLResultModel model = (SQLResultModel) table.getModel();
 				if (event.widget == add) {
 					int refRowNumber = calcRefRowNumber(table);
+
+					// 在此处应该让编辑状态的cell先失去焦点
+					table.setSelection(2, refRowNumber, false);
+					updateModifiedCell(model, null);
+
 					// 当插入空白行后，row indicator是否指向新的空白行?Yes,!PLD是这么做的
 					// 新插入的空白行没有行号
 					// 其它行的行号保持不变
 					List newList = model.insertBlankRow();
 					sort.called = false;
-					model.refreshWithSort(table, newList, refRowNumber,RefreshType.ADD);
+					model.refreshWithSort(table, newList, refRowNumber,
+							RefreshType.ADD);
+					// Rectangle r = table.getCellRect(2, refRowNumber);
+					// model.getCellEditor(2, refRowNumber).open(table, 2,
+					// refRowNumber, r);
 
 				} else if (event.widget == sub) {
 					int rowSelectoin = getRowSelection(table);
+
+					// 在此处应该让编辑状态的cell先失去焦点
+					table.setSelection(2, rowSelectoin, false);
+					updateModifiedCell(model, null);
+
 					// 当删除的是空白行，OK，直接删除,反正它没有行号。
 					// 当删除的是普通行，此时其它行的行号保持不变，但删除这行使行号变得不连续了
 					if (rowSelectoin != ModelUtil.NO_SELECTION) {
 						List newList = model.deleteRow(rowSelectoin);
 						sort.called = false;
-						model.refreshWithSort(table, newList, rowSelectoin,RefreshType.SUBTRACT);
+						model.refreshWithSort(table, newList, rowSelectoin,
+								RefreshType.SUBTRACT);
 					}
+				} else if (event.widget == save) {
+					// 在此处应该让编辑状态的cell先失去焦点
+					int rowSelectoin = getRowSelection(table);
+					table.setSelection(2, rowSelectoin, false);
+					updateModifiedCell(model, null);
+					
+					System.out.println("origin=" + model.origin.size());
+					System.out.println("data=" + model.data.size());
+					System.out.println(model.origin);
+					System.out.println(model.data);
 				}
+					
 
 			}
 		};
 		add.addListener(SWT.Selection, listener);
 		sub.addListener(SWT.Selection, listener);
+		save.addListener(SWT.Selection, listener);
+
 	}
 
 	/**
@@ -188,5 +242,40 @@ public class Main {
 		// shell.setSize(500,600);
 		shell.setLayout(new FillLayout());
 		// shell.pack();
+	}
+
+	/**
+	 * 持久化先前可能修改过的单元格.同时将将要修改的单元格newKey加入观察列表.
+	 * 
+	 * @param model
+	 * @param newKey
+	 */
+	private void updateModifiedCell(final SQLResultModel model, String newKey) {
+		if (model.checkList.size() > 0) {
+			for (Iterator it = model.checkList.iterator(); it.hasNext();) {
+				try {
+					String key = (String) it.next();
+					int slash = key.indexOf("/");
+					int col = Integer.parseInt(key.substring(0, slash));
+					int row = Integer.parseInt(key.substring(slash + 1));
+					String newContent = (String) model.content.get(key);
+					Row rowData = (Row) (model.data.get(row));
+					String oldContent = (String) rowData
+							.get(model.tableHeader[col]);
+					System.out.println("oldContent=" + oldContent
+							+ ",newContent=" + newContent);
+					if (!newContent.equals(oldContent)) {
+						rowData.put(model.tableHeader[col], newContent);
+						System.out.println(model.checkList);
+					}
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+			}
+		}
+		model.checkList.clear();
+		if (newKey != null) {
+			model.checkList.add(newKey);
+		}
 	}
 }
