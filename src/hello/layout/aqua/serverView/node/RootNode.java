@@ -17,7 +17,7 @@ import org.eclipse.swt.widgets.Display;
 public class RootNode implements Node {
 
 	private boolean init = false;
-	private List<Node> children;
+	private List<Node> children = new ArrayList<Node>();
 
 	@Override
 	public String getName() {
@@ -37,10 +37,8 @@ public class RootNode implements Node {
 			Statement stmt = null;
 			try {
 				conn = DbUtil.getConnection();
-				stmt = conn.createStatement();
-				int rows = stmt.executeUpdate("set current schema DBEFMSVR");
-				System.out.println("rows=" + rows);
 
+				
 				rs = conn.getMetaData().getTables(null, null, null,
 						new String[] { "TABLE" });
 				ResultSetMetaData meta = rs.getMetaData();
@@ -52,14 +50,15 @@ public class RootNode implements Node {
 					// // the first row is column name info
 				}
 
-				children = new ArrayList<Node>();
+				
 
 				while (rs.next()) {
 					String tableName = rs.getString("TABLE_NAME");
 					System.out.println(tableName);
 					children.add(new TableNode(this, rs.getString("TABLE_NAME")));
 				}
-				// children.add(new TableNode(this, "test"));
+				
+//				 children.add(new TableNode(this, "ORG"));
 			} catch (Exception e) {
 				e.printStackTrace();
 			} finally {

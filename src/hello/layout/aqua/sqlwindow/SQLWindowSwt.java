@@ -19,37 +19,23 @@ import hello.example.ktable.sort.SortComparatorExample;
 import hello.example.ktable.util.ModelUtil;
 import hello.example.ktable.util.RefreshType;
 import hello.example.ktable.util.Row;
-import hello.layout.aqua.sqlwindow.editor.MyDocument;
-import hello.layout.aqua.sqlwindow.editor.MySourceViewerConfiguration;
-import hello.layout.aqua.util.GridDataFactory;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.jface.text.source.SourceViewerConfiguration;
-import org.eclipse.jface.text.source.VerticalRuler;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.custom.ViewForm;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.VerifyEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
@@ -60,25 +46,22 @@ import de.kupzog.ktable.KTableCellSelectionListener;
 import de.kupzog.ktable.KTableSortComparator;
 import de.kupzog.ktable.SWTX;
 
-public class SQLWindow {
+public class SQLWindowSwt {
 	public static int seq = 1;
-	public final static int[] DEFAULT_WEIGHTS = new int[] { 45, 55 };
+	public final static int[] DEFAULT_WEIGHTS = new int[] { 30, 70 };
 	private CTabFolder tabFolder;
 	public List<CTabItem> tabItemList = new ArrayList<CTabItem>();
-	public List<SourceViewer> textViewerList = new ArrayList<SourceViewer>();
+	public List<Text> textViewerList = new ArrayList<Text>();
 	public List<KTable> tableList = new ArrayList<KTable>();
-	private static SQLWindow instance = null;
+	private static SQLWindowSwt instance = null;
 	
 	
-	private SQLWindow(CTabFolder tabFolder) {
+	private SQLWindowSwt(CTabFolder tabFolder) {
 		this.tabFolder = tabFolder;
 	}
-	public Shell getShell(){
-		return tabFolder.getShell();
-	}
-	public static SQLWindow getInstace(CTabFolder tabFolder){
+	public static SQLWindowSwt getInstace(CTabFolder tabFolder){
 		if (instance==null) {
-			instance = new SQLWindow(tabFolder);
+			instance = new SQLWindowSwt(tabFolder);
 		}
 		return instance;
 	}
@@ -94,69 +77,55 @@ public class SQLWindow {
 		SashForm right = new SashForm(tabFolder, SWT.VERTICAL);
 		right.setLayout(new FillLayout());
 
+		final Text textViewer = new Text(right, SWT.MULTI | SWT.BORDER);
+
+		// =====================result window
 		
-		Composite sqlEditorPanel = new Composite(right, SWT.NONE);
-		sqlEditorPanel.setLayout(new GridLayout());
-		Composite top = new Composite(sqlEditorPanel, SWT.NONE);
-		top.setLayout(new FillLayout());
-		top.setLayoutData(new GridData(GridData.FILL_BOTH));
-		// VerticalRuler是神马?
-		final SourceViewer sourceViewer = new SourceViewer(top, new VerticalRuler(10),
-				SWT.V_SCROLL | SWT.H_SCROLL);
-		
-		final Font font = new Font(getShell().getDisplay(), /*"Tahoma"*/"Verdana", 10, SWT.NORMAL);
-		sourceViewer.getTextWidget().setFont(font);
-		sourceViewer.getTextWidget().addDisposeListener(new DisposeListener() {
-			@Override
+		/*
+		Composite rightBottom = new Composite(right, SWT.BORDER);
+		GridLayout gl = new GridLayout(1, true);
+		rightBottom.setLayout(gl);
+		Composite buttonPanel = new Composite(rightBottom, SWT.BORDER);
+		buttonPanel.setLayout(new RowLayout());
+		buttonPanel.setLayoutData(gd4text());
+		{
+			Button b1 = new Button(buttonPanel, SWT.FLAT);
+			b1.setImage(ImageFactory.loadImage(SERVER));
+		}
+		{
+			Button b1 = new Button(buttonPanel, SWT.FLAT);
+			b1.setImage(ImageFactory.loadImage(SERVER));
+		}
+		{
+			Button b1 = new Button(buttonPanel, SWT.FLAT);
+			b1.setImage(ImageFactory.loadImage(SERVER));
+		}
+
+		// results
+		TableViewer tv = new TableViewer(rightBottom, SWT.FULL_SELECTION);
+		tv.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
+		Table t = tv.getTable();
+		for (int i = 0; i < th.length; i++) {
+			new TableColumn(t, SWT.LEFT).setText(th[i]);
+			t.getColumn(i).pack();// pack means setVisible(true)
+		}
+		t.setHeaderVisible(true);
+		t.setLinesVisible(true);
+		tv.setContentProvider(new MyContentProvider());
+		tv.setLabelProvider(new MyLabelProvider());
+		tv.setInput(PersonFactory.createPersons(10));
+
+		right.setWeights(SQLWindow.DEFAULT_WEIGHTS);
+		tabItem.setControl(right);
+		tabItem.addDisposeListener(new DisposeListener() {
 			public void widgetDisposed(DisposeEvent e) {
-				font.dispose();
+				System.out.println("I am disposed.");
+				tabItemList.remove(tabItem);
 			}
 		});
-		
-
-		// 当在文本框中输入文字时
-		// 可以通过MyDocument.get()取得输入的文字
-		// 同时可以在MyDocument.documentAboutToBeChanged()和documentChanged监听文本的变化
-		sourceViewer.setDocument(new MyDocument());
-		
-		//语法着色 + 代码提示
-		final SourceViewerConfiguration config = new MySourceViewerConfiguration();
-		sourceViewer.configure(config);
-		
-		
-		//使Alt+/也能触发代码提示
-		VerifyKeyListener verifyKeyListener = new VerifyKeyListener() {
-	        public void verifyKey(VerifyEvent event) {
-	            // Check for Alt+/
-	            if (event.stateMask == SWT.ALT && event.character == '/') {
-	                // Check if source viewer is able to perform operation
-	                if (sourceViewer.canDoOperation(SourceViewer.CONTENTASSIST_PROPOSALS))
-	                    // Perform operation
-	                    sourceViewer.doOperation(SourceViewer.CONTENTASSIST_PROPOSALS);
-	                // Veto this key press to avoid further processing
-	                event.doit = false;
-	            }
-	        }
-	    };
-	    sourceViewer.appendVerifyKeyListener(verifyKeyListener);
-		
-		Composite statusLine = new Composite(sqlEditorPanel, SWT.BORDER);
-		statusLine.setLayout(new GridLayout(5,false));
-		statusLine.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		Text position = new Text(statusLine, SWT.NONE|SWT.READ_ONLY);
-		position.setText("20:10");
-		Text se = new Text(statusLine, SWT.NONE|SWT.READ_ONLY);
-		se.setText("|");
-		Text mode = new Text(statusLine, SWT.NONE|SWT.READ_ONLY);
-		mode.setText("INS");
-		Text se2 = new Text(statusLine, SWT.NONE|SWT.READ_ONLY);
-		se2.setText("|");
-		Text message = new Text(statusLine, SWT.NONE|SWT.READ_ONLY);
-		message.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		message.setText(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())+" Script executed.");
-		
-		
-		// =====================result window
+		tabItem.setData("tv",tv);
+		tabItem.setData("text",text);
+		*/
 		ViewForm viewForm = new ViewForm(right, SWT.NONE);
 		viewForm.setTopCenterSeparate(true);
 
@@ -339,14 +308,14 @@ public class SQLWindow {
 		tabItem.setControl(right);
 		
 		tabItemList.add(tabItem);
-		textViewerList.add(sourceViewer);
+		textViewerList.add(textViewer);
 		tableList.add(table);
 		
 		tabItem.addDisposeListener(new DisposeListener() {
 			public void widgetDisposed(DisposeEvent e) {
 				System.out.println("I am disposed.");
 				tabItemList.remove(tabItem);
-				textViewerList.remove(sourceViewer);
+				textViewerList.remove(textViewer);
 				tableList.remove(table);
 			}
 		});

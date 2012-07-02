@@ -7,6 +7,7 @@ import hello.layout.aqua.sqlwindow.SQLWindow;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
@@ -39,12 +40,12 @@ public class ExecuteSQLAction extends Action {
 		
 		SQLWindow sw = SQLWindow.getInstace(studio.tabFolder);
 		int folderIndex = studio.tabFolder.getSelectionIndex();
-		Text text = sw.textViewerList.get(folderIndex);
+		SourceViewer text = sw.textViewerList.get(folderIndex);
 		//show result
 		CTabItem item = studio.tabFolder.getSelection();
 		if (item!=null) {
 			SQLResultModel model = (SQLResultModel) sw.tableList.get(folderIndex).getModel();
-			model.executeSQL(text.getText().trim());
+			model.executeSQL(text.getTextWidget().getText().trim());
 		}
 		
 	}

@@ -3,6 +3,7 @@ package hello.example.ktable.dao;
 import hello.example.ktable.util.DataRow;
 import hello.example.ktable.util.HeaderRow;
 import hello.example.ktable.util.Row;
+import hello.layout.aqua.util.DbUtil;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -20,11 +21,12 @@ public class MyDao {
 		Statement stmt = null;
 		ResultSet rs = null;
 		try {
-			Class.forName("com.ibm.db2.jcc.DB2Driver");
-			conn = DriverManager
-					.getConnection(
-							"jdbc:db2://localhost:50000/SAMPLE:retrieveMessagesFromServerOnGetMessage=true;currentSchema=CYPER.YIN;",
-							"db2admin", "db2admin");
+//			Class.forName("com.ibm.db2.jcc.DB2Driver");
+//			conn = DriverManager
+//					.getConnection(
+//							"jdbc:db2://localhost:50000/SAMPLE:retrieveMessagesFromServerOnGetMessage=true;currentSchema=CYPER.YIN;",
+//							"db2admin", "db2admin");
+			conn = DbUtil.getConnection();
 			stmt = conn.createStatement();
 			rs = stmt.executeQuery(sql);
 
@@ -55,18 +57,7 @@ public class MyDao {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			try {
-				rs.close();
-			} catch (Exception e) {
-			}
-			try {
-				stmt.close();
-			} catch (Exception e) {
-			}
-			try {
-				conn.close();
-			} catch (Exception e) {
-			}
+			DbUtil.close(rs, stmt, conn);
 		}
 		return result;
 	}

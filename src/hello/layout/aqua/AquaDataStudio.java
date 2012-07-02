@@ -121,7 +121,7 @@ public class AquaDataStudio {
 			window2.setText("Edit tabel DEPT");
 			window2.setLayoutData(gd4text());
 
-			left.setWeights(new int[] { 70, 30 });
+			left.setWeights(new int[] { 100, 0 });
 
 		}
 		{
@@ -130,7 +130,7 @@ public class AquaDataStudio {
 			// ==================================================
 			tabFolder = new CTabFolder(form, SWT.CLOSE | SWT.BORDER);
 			tabFolder.setLayout(new FillLayout());
-			tabFolder.setSimple(false);
+			tabFolder.setSimple(true);
 			tabFolder.setMaximizeVisible(true);
 
 //			SQLWindow sw = new SQLWindow(tabFolder);

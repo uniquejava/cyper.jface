@@ -79,6 +79,8 @@ public class SQLResultModel extends KTableSortedModel {
 	}
 	
 	public void executeSQL(String sql){
+		
+		
 		List<Row> list = new MyDao().querySql(sql);
 		refreshWithSort(list, 1, RefreshType.INIT);
 	}
@@ -243,7 +245,9 @@ public class SQLResultModel extends KTableSortedModel {
 	}
 
 	public List insertBlankRow() {
-		data.add(new BlankRow(tableHeader));
+		if (tableHeader!=null) {
+			data.add(new BlankRow(tableHeader));
+		}
 		return data;
 	}
 

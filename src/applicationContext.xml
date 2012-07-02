@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<bean id="tips" class="org.springframework.beans.factory.config.MapFactoryBean">
+		<property name="sourceMap">
+			<map>
+				<entry key="document">
+					<bean class="org.springframework.beans.factory.config.ListFactoryBean">
+						<property name="sourceList">
+							<list>
+								<value>getElementById()</value>
+								<value>getElementsByName()</value>
+								<value>getMe()</value>
+							</list>
+						</property>
+					</bean>
+				</entry>
+				<entry key="dojo">
+					<bean class="org.springframework.beans.factory.config.ListFactoryBean">
+						<property name="sourceList">
+							<list>
+								<value>byId()</value>
+								<value>query()</value>
+							</list>
+						</property>
+					</bean>
+				</entry>
+			</map>
+		</property>
+	</bean>
+
+
+</beans>

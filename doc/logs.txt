@@ -1,4 +1,14 @@
-﻿1:46 2012-7-2
+﻿1:01 2012-7-3
+哈哈，最新的ui(see logs/ui/*.jpg)已经有模有样了。
+
+集成了自制的SQL Editor
+着色参考了PL/SQL Developer的。简单的代码提示。Status Line
+生产库也可以连了，应该是昨晚没有过防火墙.
+
+代码还很十分粗糙！
+
+
+1:46 2012-7-2
 将KTable已经集成到Cyper Data Studio中了。
 能连上本地数据库，进行Query data了！
 今天向前了一大步。

@@ -7,6 +7,7 @@ import hello.layout.aqua.sqlwindow.SQLWindow;
 import hello.layout.aqua.util.Node;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
@@ -35,10 +36,10 @@ public class QueryDataAction extends Action {
 		}
 		TableNode tableNode = (TableNode)node;
 		SQLWindow sw = SQLWindow.getInstace(studio.tabFolder);
-		sw.createNewTabItem(tableNode.getName()+ (sw.seq++) + ".sql");
+		sw.createNewTabItem("Query data of table " + tableNode.getName()+ "_" + (sw.seq++)/* + ".sql"*/);
 		int folderIndex = studio.tabFolder.getSelectionIndex();
-		Text text = sw.textViewerList.get(folderIndex);
-		text.setText("select * from " + tableNode.getName());
+		SourceViewer text = sw.textViewerList.get(folderIndex);
+		text.getTextWidget().setText("select * from " + tableNode.getName());
 		
 		
 		
@@ -59,7 +60,7 @@ public class QueryDataAction extends Action {
 		CTabItem item = studio.tabFolder.getSelection();
 		if (item!=null) {
 			SQLResultModel model = (SQLResultModel) sw.tableList.get(folderIndex).getModel();
-			model.executeSQL(text.getText().trim());
+			model.executeSQL(text.getTextWidget().getText().trim());
 		}
 		
 	}

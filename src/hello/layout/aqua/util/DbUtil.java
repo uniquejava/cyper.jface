@@ -4,23 +4,41 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.Properties;
 
 public class DbUtil {
 	public static Connection getConnection() {
 		try {
 			Class.forName("com.ibm.db2.jcc.DB2Driver");
 
-			return DriverManager
-					.getConnection(
-							"jdbc:db2://localhost:50000/SAMPLE:retrieveMessagesFromServerOnGetMessage=true;currentSchema=CYPER.YIN;",
-							"db2admin", "db2admin");
-
-
+			 return DriverManager
+			 .getConnection(
+			 "jdbc:db2://localhost:50000/SAMPLE:retrieveMessagesFromServerOnGetMessage=true;currentSchema=CYPER.YIN;",
+			 "db2admin", "db2admin");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public static void main(String[] args) {
+
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		try {
+			conn = DbUtil.getConnection();
+			stmt = conn.createStatement();
+			rs = stmt
+					.executeQuery("select count(*) from DBEFMSVR.FMSV1_O_POOL_DEPT");
+			rs.next();
+			System.out.println("number=" + rs.getInt(1));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DbUtil.close(rs, stmt, conn);
+		}
+
 	}
 
 	public static void close(ResultSet rs, Statement stmt, Connection conn) {
