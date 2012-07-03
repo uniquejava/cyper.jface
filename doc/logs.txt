@@ -1,4 +1,14 @@
-﻿1:01 2012-7-3
+﻿2:09 2012-7-4
+今天新增了许多SQL Editor的编辑功能。
+比如Ctrl+A全选,Ctrl+D删除选中的行
+Ctrl+W关闭标签页,打开，保存等。。
+PS了新的工具栏图标
+CyperDataStudio
+修改为继承ApplicationWindow
+同时将SQLWindow改为继承自CTabFolder
+
+
+1:01 2012-7-3
 哈哈，最新的ui(see logs/ui/*.jpg)已经有模有样了。
 
 集成了自制的SQL Editor

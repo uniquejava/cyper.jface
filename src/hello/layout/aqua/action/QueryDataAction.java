@@ -1,6 +1,6 @@
 package hello.layout.aqua.action;
 
-import hello.layout.aqua.AquaDataStudio;
+import hello.layout.aqua.CyperDataStudio;
 import hello.layout.aqua.serverView.node.TableNode;
 import hello.layout.aqua.sqlwindow.SQLResultModel;
 import hello.layout.aqua.sqlwindow.SQLWindow;
@@ -11,12 +11,11 @@ import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.widgets.Text;
 
 public class QueryDataAction extends Action {
-	private AquaDataStudio studio;
+	private CyperDataStudio studio;
 
-	public QueryDataAction(AquaDataStudio studio) {
+	public QueryDataAction(CyperDataStudio studio) {
 		this.studio = studio;
 		this.setText("Query data");
 //		this.setEnabled(getSelection() instanceof TableNode);
@@ -35,16 +34,16 @@ public class QueryDataAction extends Action {
 			return; 
 		}
 		TableNode tableNode = (TableNode)node;
-		SQLWindow sw = SQLWindow.getInstace(studio.tabFolder);
-		sw.createNewTabItem("Query data of table " + tableNode.getName()+ "_" + (sw.seq++)/* + ".sql"*/);
-		int folderIndex = studio.tabFolder.getSelectionIndex();
+		SQLWindow sw = CyperDataStudio.getStudio().getSqlWindow();
+		sw.createNewTabItem("Query data of table " + tableNode.getName()+ "_" + (sw.seq++)/* + ".sql"*/,false);
+		int folderIndex = sw.getSelectionIndex();
 		SourceViewer text = sw.textViewerList.get(folderIndex);
 		text.getTextWidget().setText("select * from " + tableNode.getName());
 		
 		
 		
 		
-		CTabItem[] items = studio.tabFolder.getItems();
+		CTabItem[] items = sw.getItems();
 		//show result window if it's hidden.
 		if (items != null && items.length>0) {
 			for (int i = 0; i < items.length; i++) {
@@ -53,11 +52,11 @@ public class QueryDataAction extends Action {
 					right.setWeights(SQLWindow.DEFAULT_WEIGHTS);
 				} 
 			}
-			studio.tabFolder.setMaximized(false);
+			sw.setMaximized(false);
 		}
 		
 		//show result
-		CTabItem item = studio.tabFolder.getSelection();
+		CTabItem item = sw.getSelection();
 		if (item!=null) {
 			SQLResultModel model = (SQLResultModel) sw.tableList.get(folderIndex).getModel();
 			model.executeSQL(text.getTextWidget().getText().trim());

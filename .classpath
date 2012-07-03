@@ -20,6 +20,7 @@
 	<classpathentry kind="lib" path="lib/org.springframework.beans-3.0.5.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/org.springframework.core-3.0.5.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.3.jar" sourcepath="source/commons-lang-2.3-src.zip"/>
+	<classpathentry kind="lib" path="lib/com.ibm.icu_4.2.1.v20100412.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.jface_3.6.1.M20100825-0800.jar" sourcepath="source/org.eclipse.jface.source_3.6.1.M20100825-0800.jar"/>

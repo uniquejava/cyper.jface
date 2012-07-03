@@ -54,7 +54,7 @@ public class RootNode implements Node {
 
 				while (rs.next()) {
 					String tableName = rs.getString("TABLE_NAME");
-					System.out.println(tableName);
+//					System.out.println(tableName);
 					children.add(new TableNode(this, rs.getString("TABLE_NAME")));
 				}
 				

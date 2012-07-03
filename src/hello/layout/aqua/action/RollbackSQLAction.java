@@ -1,6 +1,6 @@
 package hello.layout.aqua.action;
 
-import hello.layout.aqua.AquaDataStudio;
+import hello.layout.aqua.CyperDataStudio;
 import hello.layout.aqua.ImageFactory;
 import hello.model.PersonFactory;
 
@@ -12,9 +12,9 @@ import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
 
 public class RollbackSQLAction extends Action {
-	private AquaDataStudio studio;
+	private CyperDataStudio studio;
 
-	public RollbackSQLAction(AquaDataStudio studio) {
+	public RollbackSQLAction(CyperDataStudio studio) {
 		this.studio = studio;
 		setImageDescriptor(ImageDescriptor.createFromImage(ImageFactory
 				.loadImage(ImageFactory.ROLLBACK)));

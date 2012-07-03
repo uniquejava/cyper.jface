@@ -19,6 +19,10 @@ public class ImageFactory {
 	public final static String EXECUTE_SQL = "execute_1616.gif";
 	public final static String COMMIT = "commit_1616.gif";
 	public final static String ROLLBACK = "rollback_1616.gif";
+	public final static String OPEN = "open_1616.gif";
+	public final static String SAVE = "save_1616.gif";
+	
+	
 	public final static String ADD = "add_row.gif";
 	public final static String SUBTRACT = "delete_row.gif";
 	public final static String LOCK = "lock_1616.gif";

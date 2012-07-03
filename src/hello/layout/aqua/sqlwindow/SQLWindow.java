@@ -19,9 +19,12 @@ import hello.example.ktable.sort.SortComparatorExample;
 import hello.example.ktable.util.ModelUtil;
 import hello.example.ktable.util.RefreshType;
 import hello.example.ktable.util.Row;
+import hello.layout.aqua.sqlwindow.editor.EventManager;
 import hello.layout.aqua.sqlwindow.editor.MyDocument;
 import hello.layout.aqua.sqlwindow.editor.MySourceViewerConfiguration;
-import hello.layout.aqua.util.GridDataFactory;
+import hello.layout.aqua.sqlwindow.editor.actions.FindAction;
+import hello.layout.aqua.sqlwindow.editor.actions.RedoAction;
+import hello.layout.aqua.sqlwindow.editor.actions.UndoAction;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,6 +32,10 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.text.IUndoManager;
+import org.eclipse.jface.text.TextViewer;
+import org.eclipse.jface.text.TextViewerUndoManager;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.text.source.VerticalRuler;
@@ -36,20 +43,22 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.custom.ViewForm;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
@@ -60,51 +69,63 @@ import de.kupzog.ktable.KTableCellSelectionListener;
 import de.kupzog.ktable.KTableSortComparator;
 import de.kupzog.ktable.SWTX;
 
-public class SQLWindow {
+public class SQLWindow extends CTabFolder{
+	public SQLWindow(Composite parent, int style) {
+		super(parent, style);
+	}
+
 	public static int seq = 1;
 	public final static int[] DEFAULT_WEIGHTS = new int[] { 45, 55 };
-	private CTabFolder tabFolder;
+	public final static int[] INITIAL_WEIGHTS = new int[] { 100,0 };
 	public List<CTabItem> tabItemList = new ArrayList<CTabItem>();
+	
+	public EventManager eventManager = new EventManager(this);
 	public List<SourceViewer> textViewerList = new ArrayList<SourceViewer>();
+	public List<MyDocument> documentList = new ArrayList<MyDocument>();
+	public List<IUndoManager> undoManagerList = new ArrayList<IUndoManager>();
 	public List<KTable> tableList = new ArrayList<KTable>();
-	private static SQLWindow instance = null;
-	
-	
-	private SQLWindow(CTabFolder tabFolder) {
-		this.tabFolder = tabFolder;
+
+	private IAction undoAction = new UndoAction(this);
+	private IAction redoAction = new RedoAction(this);
+	private IAction findAction = new FindAction(this);
+
+
+	public TextViewer getSourceViewer() {
+		int index = getSelectionIndex();
+		return textViewerList.get(index);
 	}
-	public Shell getShell(){
-		return tabFolder.getShell();
+
+	public MyDocument getDocument() {
+		int index = getSelectionIndex();
+		return documentList.get(index);
 	}
-	public static SQLWindow getInstace(CTabFolder tabFolder){
-		if (instance==null) {
-			instance = new SQLWindow(tabFolder);
-		}
-		return instance;
+
+	public IUndoManager getUndoManager() {
+		int index = getSelectionIndex();
+		return undoManagerList.get(index);
 	}
-	
-	
-	public CTabItem createNewTabItem(String title){
+
+	public CTabItem createNewTabItem(String title,boolean maximize) {
 		// right top
 		// sql editor
-		final CTabItem tabItem = new CTabItem(tabFolder, SWT.None);
+		final CTabItem tabItem = new CTabItem(this, SWT.None);
 		tabItem.setText(title);
 		tabItem.setImage(loadImage(SQL_EDITOR));
 
-		SashForm right = new SashForm(tabFolder, SWT.VERTICAL);
+		SashForm right = new SashForm(this, SWT.VERTICAL);
 		right.setLayout(new FillLayout());
 
-		
 		Composite sqlEditorPanel = new Composite(right, SWT.NONE);
 		sqlEditorPanel.setLayout(new GridLayout());
 		Composite top = new Composite(sqlEditorPanel, SWT.NONE);
 		top.setLayout(new FillLayout());
 		top.setLayoutData(new GridData(GridData.FILL_BOTH));
 		// VerticalRuler是神马?
-		final SourceViewer sourceViewer = new SourceViewer(top, new VerticalRuler(10),
-				SWT.V_SCROLL | SWT.H_SCROLL);
-		
-		final Font font = new Font(getShell().getDisplay(), /*"Tahoma"*/"Verdana", 10, SWT.NORMAL);
+		final SourceViewer sourceViewer = new SourceViewer(top,
+				new VerticalRuler(10), SWT.V_SCROLL | SWT.H_SCROLL);
+
+		final Font font = new Font(getShell().getDisplay(), /* "Tahoma" */
+		"Verdana", 10, SWT.NORMAL);
 		sourceViewer.getTextWidget().setFont(font);
 		sourceViewer.getTextWidget().addDisposeListener(new DisposeListener() {
 			@Override
@@ -112,50 +133,103 @@ public class SQLWindow {
 				font.dispose();
 			}
 		});
-		
 
 		// 当在文本框中输入文字时
 		// 可以通过MyDocument.get()取得输入的文字
 		// 同时可以在MyDocument.documentAboutToBeChanged()和documentChanged监听文本的变化
-		sourceViewer.setDocument(new MyDocument());
-		
-		//语法着色 + 代码提示
+		final MyDocument document = new MyDocument(this);
+		sourceViewer.setDocument(document);
+
+		// 语法着色 + 代码提示
 		final SourceViewerConfiguration config = new MySourceViewerConfiguration();
 		sourceViewer.configure(config);
-		
-		
-		//使Alt+/也能触发代码提示
+
+		// 使Alt+/也能触发代码提示
 		VerifyKeyListener verifyKeyListener = new VerifyKeyListener() {
-	        public void verifyKey(VerifyEvent event) {
-	            // Check for Alt+/
-	            if (event.stateMask == SWT.ALT && event.character == '/') {
-	                // Check if source viewer is able to perform operation
-	                if (sourceViewer.canDoOperation(SourceViewer.CONTENTASSIST_PROPOSALS))
-	                    // Perform operation
-	                    sourceViewer.doOperation(SourceViewer.CONTENTASSIST_PROPOSALS);
-	                // Veto this key press to avoid further processing
-	                event.doit = false;
-	            }
-	        }
-	    };
-	    sourceViewer.appendVerifyKeyListener(verifyKeyListener);
-		
+			public void verifyKey(VerifyEvent event) {
+				// Check for Alt+/
+				if (event.stateMask == SWT.ALT && event.character == '/') {
+					// Check if source viewer is able to perform operation
+					if (sourceViewer
+							.canDoOperation(SourceViewer.CONTENTASSIST_PROPOSALS))
+						// Perform operation
+						sourceViewer
+								.doOperation(SourceViewer.CONTENTASSIST_PROPOSALS);
+					// Veto this key press to avoid further processing
+					event.doit = false;
+				}
+			}
+		};
+		sourceViewer.appendVerifyKeyListener(verifyKeyListener);
+
+		final IUndoManager undoManager = new TextViewerUndoManager(100);
+		undoManager.connect(sourceViewer);
+
+		// read here:
+		// http://www.eclipse.org/articles/StyledText%201/article1.html
+		final StyledText text = sourceViewer.getTextWidget();
+		text.addKeyListener(new KeyListener() {
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+
+				if (e.stateMask == SWT.CTRL && e.keyCode == 'a') {
+					// 实现Ctrl + A
+					text.selectAll();
+
+				} else if (e.stateMask == SWT.CTRL && e.keyCode == 'd') {
+					// 模拟实现Eclipse中Ctrl+D的功能
+					// note that select.y is the length of the selection
+					Point select = text.getSelectionRange();
+					int startLine = text.getLineAtOffset(select.x);
+					int startLineOffset = text.getOffsetAtLine(startLine);
+					int endLine = text.getLineAtOffset(select.x + select.y);
+					int lineCount = endLine - startLine + 1;
+					for (int i = 0; i < lineCount; i++) {
+						String line = text.getLine(startLine);
+						// 尝试删除行(包含行尾的\r\n，如果有，没有会报异常)
+						try {
+							text.replaceTextRange(startLineOffset,
+									line.length() + 2, "");
+						} catch (Exception e2) {
+							text.replaceTextRange(startLineOffset,
+									line.length(), "");
+						}
+					}
+				} else if (e.stateMask == SWT.CTRL && e.keyCode == 'z') {
+					undoAction.run();
+				} else if (e.stateMask == SWT.CTRL && e.keyCode == 'y') {
+					redoAction.run();
+				} else if (e.stateMask == SWT.CTRL && e.keyCode == 'f') {
+					findAction.run();
+				}/* else if (e.stateMask == SWT.CTRL && e.keyCode == 'o') {
+					openAction.run();
+				} else if (e.stateMask == SWT.CTRL && e.keyCode == 's') {
+					saveAction.run();
+				}*/
+			}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+			}
+		});
+
 		Composite statusLine = new Composite(sqlEditorPanel, SWT.BORDER);
-		statusLine.setLayout(new GridLayout(5,false));
+		statusLine.setLayout(new GridLayout(5, false));
 		statusLine.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		Text position = new Text(statusLine, SWT.NONE|SWT.READ_ONLY);
+		Text position = new Text(statusLine, SWT.NONE | SWT.READ_ONLY);
 		position.setText("20:10");
-		Text se = new Text(statusLine, SWT.NONE|SWT.READ_ONLY);
+		Text se = new Text(statusLine, SWT.NONE | SWT.READ_ONLY);
 		se.setText("|");
-		Text mode = new Text(statusLine, SWT.NONE|SWT.READ_ONLY);
+		Text mode = new Text(statusLine, SWT.NONE | SWT.READ_ONLY);
 		mode.setText("INS");
-		Text se2 = new Text(statusLine, SWT.NONE|SWT.READ_ONLY);
+		Text se2 = new Text(statusLine, SWT.NONE | SWT.READ_ONLY);
 		se2.setText("|");
-		Text message = new Text(statusLine, SWT.NONE|SWT.READ_ONLY);
+		Text message = new Text(statusLine, SWT.NONE | SWT.READ_ONLY);
 		message.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		message.setText(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())+" Script executed.");
-		
-		
+		message.setText(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+				.format(new Date()) + " Script executed.");
+
 		// =====================result window
 		ViewForm viewForm = new ViewForm(right, SWT.NONE);
 		viewForm.setTopCenterSeparate(true);
@@ -164,24 +238,22 @@ public class SQLWindow {
 		ToolBar toolbar = new ToolBar(viewForm, SWT.FLAT);
 		final ToolItem lock = new ToolItem(toolbar, SWT.PUSH);
 		lock.setImage(loadImage(LOCK));
-		
-		
+
 		final ToolItem add = new ToolItem(toolbar, SWT.PUSH);
 		add.setImage(loadImage(ADD));
 
 		final ToolItem sub = new ToolItem(toolbar, SWT.PUSH);
 		sub.setImage(loadImage(SUBTRACT));
 
-		
 		final ToolItem save = new ToolItem(toolbar, SWT.PUSH);
 		save.setImage(loadImage(MYTICK));
-		
+
 		ToolItem down1 = new ToolItem(toolbar, SWT.PUSH);
 		down1.setImage(loadImage(DOWN1));
-		
+
 		ToolItem down2 = new ToolItem(toolbar, SWT.PUSH);
 		down2.setImage(loadImage(DOWN2));
-		
+
 		ToolItem wyj = new ToolItem(toolbar, SWT.PUSH);
 		wyj.setImage(loadImage(WYJ));
 		ToolItem cm = new ToolItem(toolbar, SWT.PUSH);
@@ -190,21 +262,19 @@ public class SQLWindow {
 		prev.setImage(loadImage(PREV));
 		ToolItem next = new ToolItem(toolbar, SWT.PUSH);
 		next.setImage(loadImage(NEXT));
-		
-		
+
 		viewForm.setTopLeft(toolbar);
-		
-		
-		//swt table
-		
+
+		// swt table
+
 		Composite contentPanel = new Composite(viewForm, SWT.NONE);
-//		contentPanel.setLayout(new GridLayout(1, true));
+		// contentPanel.setLayout(new GridLayout(1, true));
 		contentPanel.setLayout(new FillLayout());
-		
+
 		final KTable table = new KTable(contentPanel, SWT.FULL_SELECTION
 				| SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL
 				| SWTX.FILL_WITH_LASTCOL | SWTX.EDIT_ON_KEY);
-		
+
 		final SQLResultModel model = new SQLResultModel(table);
 
 		final KTableSortOnClick sort = new KTableSortOnClick(table,
@@ -228,7 +298,7 @@ public class SQLWindow {
 				int actualRow = model.mapRowIndexToModel(row);
 				System.out.println("checkList=" + model.checkList);
 				updateModifiedCell(model, col + "/" + actualRow);
-//				shell.setText("[" + row + "," + col + "]");
+				// shell.setText("[" + row + "," + col + "]");
 				// System.out
 				// .println("Cell [" + col + ";" + row + "] selected11.");
 				// 点表头的时候row竟然不为0，
@@ -236,11 +306,13 @@ public class SQLWindow {
 				// 更改的点cell的事件
 				// FIXME 这段我都看不懂写的啥了.
 				// 如果在refresh的时候已经设定了rowIndicator
-				/*if (model.updateRowIndicatorInRefreshMethod && sort.called  ) {
-					System.out.println("model.updateRowIndicatorInRefreshMethod");
-					model.updateRowIndicatorInRefreshMethod = false;
-					return;
-				} else*/
+				/*
+				 * if (model.updateRowIndicatorInRefreshMethod && sort.called )
+				 * {
+				 * System.out.println("model.updateRowIndicatorInRefreshMethod"
+				 * ); model.updateRowIndicatorInRefreshMethod = false; return; }
+				 * else
+				 */
 				if (row != 0) {
 					updateRowIndicator(row);
 				}
@@ -314,13 +386,12 @@ public class SQLWindow {
 					int rowSelectoin = getRowSelection(table);
 					table.setSelection(2, rowSelectoin, false);
 					updateModifiedCell(model, null);
-					
+
 					System.out.println("origin=" + model.origin.size());
 					System.out.println("data=" + model.data.size());
 					System.out.println(model.origin);
 					System.out.println(model.data);
 				}
-					
 
 			}
 		};
@@ -328,33 +399,40 @@ public class SQLWindow {
 		sub.addListener(SWT.Selection, listener);
 		save.addListener(SWT.Selection, listener);
 
-		
-		
 		viewForm.setContent(contentPanel);
+
+		// ----important------------
+		if (!maximize) {
+			right.setWeights(DEFAULT_WEIGHTS);
+		}else{
+			right.setWeights(INITIAL_WEIGHTS);
+			setMaximized(true);
+		}
 		
-		
-		
-		//----important------------
-		right.setWeights(DEFAULT_WEIGHTS);
 		tabItem.setControl(right);
-		
+
 		tabItemList.add(tabItem);
 		textViewerList.add(sourceViewer);
+		documentList.add(document);
+		undoManagerList.add(undoManager);
 		tableList.add(table);
-		
+
 		tabItem.addDisposeListener(new DisposeListener() {
 			public void widgetDisposed(DisposeEvent e) {
 				System.out.println("I am disposed.");
 				tabItemList.remove(tabItem);
 				textViewerList.remove(sourceViewer);
+				documentList.remove(document);
+				undoManagerList.remove(undoManager);
 				tableList.remove(table);
 			}
 		});
-		
-		tabFolder.setSelection(tabItem);
-		
+
+		this.setSelection(tabItem);
+
 		return tabItem;
 	}
+
 	/**
 	 * 持久化先前可能修改过的单元格.同时将将要修改的单元格newKey加入观察列表.
 	 * 
@@ -389,59 +467,4 @@ public class SQLWindow {
 			model.checkList.add(newKey);
 		}
 	}
-//
-//	class MyLabelProvider implements ITableLabelProvider {
-//		public void removeListener(ILabelProviderListener listener) {
-//		}
-//
-//		public boolean isLabelProperty(Object element, String property) {
-//			return false;
-//		}
-//
-//		public void dispose() {
-//		}
-//
-//		public void addListener(ILabelProviderListener listener) {
-//		}
-//
-//		// 其实LabelProvider是用来决定如何显示tbody中每个td中的数据的
-//		public String getColumnText(Object element, int columnIndex) {
-//			// List<Person> list = (List<Person>) element;
-//			// element是集合中的一项目元素（实际类型由ContentProvider决定
-//			Person p = (Person) element;
-//			switch (columnIndex) {
-//			case 0:
-//				return String.valueOf(p.getId());
-//			case 1:
-//				return p.getName();
-//			case 2:
-//				return p.getGender();
-//			case 3:
-//				return p.getColor();
-//			default:
-//				return null;
-//			}
-//		}
-//
-//		public Image getColumnImage(Object element, int columnIndex) {
-//			return null;
-//		}
-//	}
-//
-//	class MyContentProvider implements IStructuredContentProvider {
-//		public void dispose() {
-//		}
-//
-//		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-//		}
-//
-//		// 就是把Input传成一个数组对象，便于LabelProvider使用
-//		public Object[] getElements(Object inputElement) {
-//			List<Person> list = (List<Person>) inputElement;
-//			// Object[] result = new Object[list.size()];
-//			// list.toArray(result);
-//			// return result;
-//			return list.toArray();
-//		}
-//	}
 }

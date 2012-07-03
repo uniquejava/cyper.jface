@@ -1,6 +1,6 @@
 package hello.layout.aqua.action;
 
-import hello.layout.aqua.AquaDataStudio;
+import hello.layout.aqua.CyperDataStudio;
 import hello.layout.aqua.ImageFactory;
 import hello.layout.aqua.sqlwindow.SQLResultModel;
 import hello.layout.aqua.sqlwindow.SQLWindow;
@@ -11,12 +11,11 @@ import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.widgets.Text;
 
 public class ExecuteSQLAction extends Action {
-	private AquaDataStudio studio;
+	private CyperDataStudio studio;
 
-	public ExecuteSQLAction(AquaDataStudio studio) {
+	public ExecuteSQLAction(CyperDataStudio studio) {
 		this.studio = studio;
 		setImageDescriptor(ImageDescriptor.createFromImage(ImageFactory
 				.loadImage(ImageFactory.EXECUTE_SQL)));
@@ -26,7 +25,8 @@ public class ExecuteSQLAction extends Action {
 
 	@Override
 	public void run() {
-		CTabItem[] items = studio.tabFolder.getItems();
+		SQLWindow sw = CyperDataStudio.getStudio().getSqlWindow();
+		CTabItem[] items = sw.getItems();
 		//show result window if it's hidden.
 		if (items != null && items.length>0) {
 			for (int i = 0; i < items.length; i++) {
@@ -35,14 +35,13 @@ public class ExecuteSQLAction extends Action {
 					right.setWeights(SQLWindow.DEFAULT_WEIGHTS);
 				} 
 			}
-			studio.tabFolder.setMaximized(false);
+			sw.setMaximized(false);
 		}
 		
-		SQLWindow sw = SQLWindow.getInstace(studio.tabFolder);
-		int folderIndex = studio.tabFolder.getSelectionIndex();
+		int folderIndex = sw.getSelectionIndex();
 		SourceViewer text = sw.textViewerList.get(folderIndex);
 		//show result
-		CTabItem item = studio.tabFolder.getSelection();
+		CTabItem item = sw.getSelection();
 		if (item!=null) {
 			SQLResultModel model = (SQLResultModel) sw.tableList.get(folderIndex).getModel();
 			model.executeSQL(text.getTextWidget().getText().trim());
