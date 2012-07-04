@@ -4,14 +4,26 @@ import static hello.layout.aqua.ImageFactory.LOGO;
 import static hello.layout.aqua.ImageFactory.SCRIPT;
 import static hello.layout.aqua.ImageFactory.SERVER;
 import static hello.layout.aqua.util.GridDataFactory.gd4text;
-import hello.layout.aqua.action.TabCloseAction;
+import hello.layout.aqua.action.BeautifySQLAction;
 import hello.layout.aqua.action.CommitSQLAction;
 import hello.layout.aqua.action.ExecuteSQLAction;
-import hello.layout.aqua.action.TabOpenAction;
+import hello.layout.aqua.action.FindReplaceAction;
 import hello.layout.aqua.action.QueryDataAction;
+import hello.layout.aqua.action.SelectionCommentAction;
+import hello.layout.aqua.action.SelectionIndentAction;
+import hello.layout.aqua.action.SelectionUncommentAction;
+import hello.layout.aqua.action.SelectionUnindentAction;
+import hello.layout.aqua.action.TextCopyAction;
+import hello.layout.aqua.action.TextCutAction;
+import hello.layout.aqua.action.TextPasteAction;
+import hello.layout.aqua.action.TextRedoAction;
 import hello.layout.aqua.action.RegisterServerAction;
 import hello.layout.aqua.action.RollbackSQLAction;
+import hello.layout.aqua.action.TabCloseAction;
+import hello.layout.aqua.action.TabOpenAction;
 import hello.layout.aqua.action.TabSaveAction;
+import hello.layout.aqua.action.TextSelectAllAction;
+import hello.layout.aqua.action.TextUndoAction;
 import hello.layout.aqua.scriptsView.ScriptsTreeContentProvider;
 import hello.layout.aqua.scriptsView.ScriptsTreeLabelProvider;
 import hello.layout.aqua.serverView.ServerTreeContentProvider;
@@ -26,7 +38,6 @@ import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabFolder2Adapter;
 import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
@@ -51,6 +62,20 @@ public class CyperDataStudio extends ApplicationWindow {
 	public TreeViewer serverTree;
 	private IAction openSQLWindowAction;
 	private IAction saveSQLAction;
+	private IAction undoAction;
+	private IAction redoAction;
+	private IAction cutAction;
+	private IAction copyAction;
+	private IAction pasteAction;
+	private IAction selectAllAction;
+	private IAction findReplaceAction;
+	private IAction beautifyAction;
+	private IAction indentAction;
+	private IAction unindentAction;
+	private IAction commentAction;
+	private IAction uncommentAction;
+	
+	
 	private IAction registerServerAction;
 	private IAction executeSQLAction;
 	private IAction commitSQLAction;
@@ -80,6 +105,19 @@ public class CyperDataStudio extends ApplicationWindow {
 		rollbackSQLAction = new RollbackSQLAction(this);
 		openSQLWindowAction = new TabOpenAction(this);
 		saveSQLAction = new TabSaveAction(this);
+		undoAction = new TextUndoAction(this);
+		redoAction = new TextRedoAction(this);
+		cutAction = new TextCutAction(this);
+		copyAction = new TextCopyAction(this);
+		pasteAction = new TextPasteAction(this);
+		selectAllAction = new TextSelectAllAction(this);
+		findReplaceAction = new FindReplaceAction(this);
+		beautifyAction = new BeautifySQLAction(this);
+		indentAction = new SelectionIndentAction(this);
+		unindentAction =new SelectionUnindentAction(this);
+		commentAction = new SelectionCommentAction(this);
+		uncommentAction = new SelectionUncommentAction(this);
+		
 		closeSQLWindowTabAction = new TabCloseAction();
 		
 		this.addMenuBar();
@@ -222,7 +260,7 @@ public class CyperDataStudio extends ApplicationWindow {
 	@Override
 	protected void configureShell(Shell shell) {
 		super.configureShell(shell);
-		shell.setText("PL/SQL Devloper for DB2 0.1(build20120703)");
+		shell.setText("PL/SQL Developer for DB2 0.1(build20120705)");
 		shell.setImage(ImageFactory.loadImage(display, LOGO));
 		shell.setMaximized(true);
 		shell.addKeyListener(new KeyListener() {
@@ -262,6 +300,22 @@ public class CyperDataStudio extends ApplicationWindow {
 		toolbar.add(new Separator());
 		toolbar.add(openSQLWindowAction);
 		toolbar.add(saveSQLAction);
+		toolbar.add(new Separator());
+		toolbar.add(undoAction);
+		toolbar.add(redoAction);
+		toolbar.add(new Separator());
+		toolbar.add(cutAction);
+		toolbar.add(copyAction);
+		toolbar.add(pasteAction);
+		toolbar.add(new Separator());
+		toolbar.add(findReplaceAction);
+		toolbar.add(new Separator());
+		toolbar.add(beautifyAction);
+		toolbar.add(indentAction);
+		toolbar.add(unindentAction);
+		toolbar.add(commentAction);
+		toolbar.add(uncommentAction);
+		
 		
 		return toolbar;
 	}
@@ -286,6 +340,27 @@ public class CyperDataStudio extends ApplicationWindow {
 		//action只有放到了file menu上，快捷键才会激活.
 		fileMenu.add(openSQLWindowAction);
 		fileMenu.add(saveSQLAction);
+		
+		editMenu.add(undoAction);
+		editMenu.add(redoAction);
+		editMenu.add(new Separator());
+		editMenu.add(beautifyAction);
+		editMenu.add(new Separator());
+		editMenu.add(cutAction);
+		editMenu.add(copyAction);
+		editMenu.add(pasteAction);
+		editMenu.add(selectAllAction);
+		
+		MenuManager selectionMenu = new MenuManager("Selection");
+		selectionMenu.add(indentAction);
+		selectionMenu.add(unindentAction);
+		selectionMenu.add(commentAction);
+		selectionMenu.add(uncommentAction);
+		
+		editMenu.add(selectionMenu);
+		
+		editMenu.add(new Separator());
+		editMenu.add(findReplaceAction);
 		
 		windowMenu.add(closeSQLWindowTabAction);
 

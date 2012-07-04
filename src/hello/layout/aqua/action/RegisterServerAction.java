@@ -1,6 +1,5 @@
 package hello.layout.aqua.action;
 
-import static hello.layout.aqua.ImageFactory.REGISTER_SERVER;
 import hello.layout.aqua.CyperDataStudio;
 import hello.layout.aqua.ImageFactory;
 import hello.layout.aqua.dialog.RegisterServerDialog;
@@ -16,7 +15,7 @@ public class RegisterServerAction extends Action {
 	public RegisterServerAction(CyperDataStudio studio) {
 		this.studio = studio;
 		setImageDescriptor(ImageDescriptor.createFromImage(ImageFactory
-				.loadImage(Display.getDefault(), REGISTER_SERVER)));
+				.loadImage(Display.getDefault(), ImageFactory.LOGON)));
 		setToolTipText("Register Server(Insert)");
 	}
 

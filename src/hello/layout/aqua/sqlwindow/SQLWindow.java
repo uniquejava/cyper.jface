@@ -22,9 +22,6 @@ import hello.example.ktable.util.Row;
 import hello.layout.aqua.sqlwindow.editor.EventManager;
 import hello.layout.aqua.sqlwindow.editor.MyDocument;
 import hello.layout.aqua.sqlwindow.editor.MySourceViewerConfiguration;
-import hello.layout.aqua.sqlwindow.editor.actions.FindAction;
-import hello.layout.aqua.sqlwindow.editor.actions.RedoAction;
-import hello.layout.aqua.sqlwindow.editor.actions.UndoAction;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,7 +29,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.TextViewerUndoManager;
@@ -84,10 +80,6 @@ public class SQLWindow extends CTabFolder{
 	public List<MyDocument> documentList = new ArrayList<MyDocument>();
 	public List<IUndoManager> undoManagerList = new ArrayList<IUndoManager>();
 	public List<KTable> tableList = new ArrayList<KTable>();
-
-	private IAction undoAction = new UndoAction(this);
-	private IAction redoAction = new RedoAction(this);
-	private IAction findAction = new FindAction(this);
 
 
 	public TextViewer getSourceViewer() {
@@ -196,13 +188,13 @@ public class SQLWindow extends CTabFolder{
 									line.length(), "");
 						}
 					}
-				} else if (e.stateMask == SWT.CTRL && e.keyCode == 'z') {
+				} /*else if (e.stateMask == SWT.CTRL && e.keyCode == 'z') {
 					undoAction.run();
 				} else if (e.stateMask == SWT.CTRL && e.keyCode == 'y') {
 					redoAction.run();
 				} else if (e.stateMask == SWT.CTRL && e.keyCode == 'f') {
 					findAction.run();
-				}/* else if (e.stateMask == SWT.CTRL && e.keyCode == 'o') {
+				} else if (e.stateMask == SWT.CTRL && e.keyCode == 'o') {
 					openAction.run();
 				} else if (e.stateMask == SWT.CTRL && e.keyCode == 's') {
 					saveAction.run();

@@ -44,7 +44,17 @@ public class ExecuteSQLAction extends Action {
 		CTabItem item = sw.getSelection();
 		if (item!=null) {
 			SQLResultModel model = (SQLResultModel) sw.tableList.get(folderIndex).getModel();
-			model.executeSQL(text.getTextWidget().getText().trim());
+			String selectionText = text.getTextWidget().getSelectionText().trim();
+			if (selectionText.endsWith(";")) {
+				selectionText = selectionText.substring(0,selectionText.length()-1);
+			}
+			if (selectionText.length()==0) {
+				selectionText = text.getTextWidget().getText();
+			}
+			
+			if (selectionText.length()>0) {
+				model.executeSQL(selectionText);
+			}
 		}
 		
 	}

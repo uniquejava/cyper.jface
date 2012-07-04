@@ -48,8 +48,7 @@ public class RegisterServerDialog extends Dialog {
 
 		TabItem generalTabItem = new TabItem(tabFolder, SWT.NONE);
 		generalTabItem.setText("General");
-		generalTabItem.setImage(loadImage(getShell().getDisplay(),
-				REGISTER_SERVER));
+		generalTabItem.setImage(loadImage(getShell().getDisplay(),ImageFactory.LOGON));
 
 		{
 			Composite generalPanel = new Composite(tabFolder, SWT.None);

@@ -1,7 +1,7 @@
 package hello.layout.aqua.dialog;
 
 
-import hello.layout.aqua.sqlwindow.SQLWindow;
+import hello.layout.aqua.CyperDataStudio;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
@@ -20,24 +20,24 @@ import org.eclipse.swt.widgets.Text;
 
 public class FindAndReplace extends Dialog {
 
-	private SQLWindow sqlWindow;
+	private CyperDataStudio studio;
 	private Button btFind;
 	private Button btReplace;
 	private Button btnReplaceAndFind;
 	private Button btClose;
 	private FindReplaceDocumentAdapter findAdapter;
 
-	public FindAndReplace(SQLWindow sqlWindow, Shell parentShell) {
+	public FindAndReplace(CyperDataStudio studio, Shell parentShell) {
 		super(parentShell);
-		this.sqlWindow = sqlWindow;
-		findAdapter = new FindReplaceDocumentAdapter(sqlWindow.getDocument());
+		this.studio = studio;
+		findAdapter = new FindReplaceDocumentAdapter(studio.getSqlWindow().getDocument());
 	}
 
 	@Override
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
 		newShell.setText("Find/Replace");
-		newShell.setLocation(getParentShell().getLocation());
+		newShell.setLocation(400,150);
 		newShell.setSize(300, 270);
 	}
 
@@ -126,7 +126,7 @@ public class FindAndReplace extends Dialog {
 		btFind.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				boolean b = sqlWindow.eventManager.howAboutFind(findAdapter,
+				boolean b = studio.getSqlWindow().eventManager.howAboutFind(findAdapter,
 						findText.getText(), forwardButton.getSelection(),
 						match.getSelection(), wholeWord.getSelection(),
 						regexp.getSelection());
@@ -136,7 +136,7 @@ public class FindAndReplace extends Dialog {
 		btReplace.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				sqlWindow.eventManager.doReplace(findAdapter,
+				studio.getSqlWindow().eventManager.doReplace(findAdapter,
 						replaceText.getText(), regexp.getSelection());
 				enableReplaceButtions(false);
 			}
@@ -144,9 +144,9 @@ public class FindAndReplace extends Dialog {
 		btnReplaceAndFind.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				sqlWindow.eventManager.doReplace(findAdapter,
+				studio.getSqlWindow().eventManager.doReplace(findAdapter,
 						replaceText.getText(), regexp.getSelection());
-				boolean b = sqlWindow.eventManager.howAboutFind(findAdapter,
+				boolean b = studio.getSqlWindow().eventManager.howAboutFind(findAdapter,
 						findText.getText(), forwardButton.getSelection(),
 						match.getSelection(), wholeWord.getSelection(),
 						regexp.getSelection());
@@ -162,7 +162,7 @@ public class FindAndReplace extends Dialog {
 
 		forwardButton.setSelection(true);
 		enableReplaceButtions(false);
-		findText.setText(sqlWindow.getSourceViewer().getTextWidget().getSelectionText());
+		findText.setText(studio.getSqlWindow().getSourceViewer().getTextWidget().getSelectionText());
 		findText.setFocus();
 
 		return parent;
