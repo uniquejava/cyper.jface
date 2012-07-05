@@ -22,6 +22,13 @@ public class DbUtil {
 		return null;
 	}
 
+	public static Connection getConnection(ConnectionInfo info)
+			throws Exception {
+		Class.forName("com.ibm.db2.jcc.DB2Driver");
+		String url = info.toDB2String();
+		return DriverManager.getConnection(url, info.getUsername(),info.getPassword());
+	}
+
 	public static void main(String[] args) {
 
 		Connection conn = null;

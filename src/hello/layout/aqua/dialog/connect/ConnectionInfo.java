@@ -11,6 +11,13 @@ public class ConnectionInfo {
 	private String username;
 	private String password;
 
+	public ConnectionInfo() {
+	}
+
+	public ConnectionInfo(String name) {
+		this.name = name;
+	}
+
 	public String getName() {
 		return name;
 	}

@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -90,6 +91,9 @@ public class LogonDialog extends Dialog {
 		for (String key : connectionInfoMap.keySet()) {
 			databaseText.add(key);
 		}
+		if (databaseText.getItemCount()>0) {
+			databaseText.select(0);
+		}
 
 		databaseText.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -110,7 +114,15 @@ public class LogonDialog extends Dialog {
 				ConnectionDialog connectionDialog = new ConnectionDialog(
 						getShell());
 				int ret = connectionDialog.open();
-				//TODO not implement yet.
+				if (ret== Window.OK) {
+					databaseText.removeAll();
+					for(String key: Bootstrap.getInstance().getConnectionInfoMap().keySet()){
+						databaseText.add(key);
+					}
+					if (databaseText.getItemCount()>0) {
+						databaseText.select(0);
+					}
+				}
 			}
 		});
 

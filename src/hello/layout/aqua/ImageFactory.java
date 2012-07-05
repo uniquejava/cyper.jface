@@ -35,14 +35,15 @@ public class ImageFactory {
 	public final static String COMMENT = "comment_1616.gif";
 	public final static String UNCOMMENT = "uncomment_1616.gif";
 	
-	
+	public final static String NEW_CONNECTION = "new_connection.gif";
+	public final static String DELETE_CONNECTION = "delete_obj.gif";
+
 	public final static String ADD = "add_row.gif";
 	public final static String SUBTRACT = "delete_row.gif";
 	public final static String LOCK = "lock_1616.gif";
 	public final static String UNLOCK = "unlock_1616.gif";
 	public final static String UP = "up.gif";
 	public final static String DOWN = "down.gif";
-	public final static String TICK = "running.gif";
 	public final static String MYTICK = "running.gif";
 	public final static String DOWN1 = "down1_1616.gif";
 	public final static String DOWN2 = "down2_1616.gif";
