@@ -7,6 +7,7 @@ import static hello.layout.aqua.util.GridDataFactory.gd4text;
 import hello.layout.aqua.action.BeautifySQLAction;
 import hello.layout.aqua.action.CommitSQLAction;
 import hello.layout.aqua.action.ExecuteSQLAction;
+import hello.layout.aqua.action.ExitAction;
 import hello.layout.aqua.action.FindReplaceAction;
 import hello.layout.aqua.action.QueryDataAction;
 import hello.layout.aqua.action.SelectionCommentAction;
@@ -24,6 +25,7 @@ import hello.layout.aqua.action.TabOpenAction;
 import hello.layout.aqua.action.TabSaveAction;
 import hello.layout.aqua.action.TextSelectAllAction;
 import hello.layout.aqua.action.TextUndoAction;
+import hello.layout.aqua.dialog.LogonDialog;
 import hello.layout.aqua.scriptsView.ScriptsTreeContentProvider;
 import hello.layout.aqua.scriptsView.ScriptsTreeLabelProvider;
 import hello.layout.aqua.serverView.ServerTreeContentProvider;
@@ -37,6 +39,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.window.ApplicationWindow;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder2Adapter;
 import org.eclipse.swt.custom.CTabFolderEvent;
@@ -62,6 +65,8 @@ public class CyperDataStudio extends ApplicationWindow {
 	public TreeViewer serverTree;
 	private IAction openSQLWindowAction;
 	private IAction saveSQLAction;
+	private IAction exitAction;
+	
 	private IAction undoAction;
 	private IAction redoAction;
 	private IAction cutAction;
@@ -74,26 +79,22 @@ public class CyperDataStudio extends ApplicationWindow {
 	private IAction unindentAction;
 	private IAction commentAction;
 	private IAction uncommentAction;
-	
-	
+
 	private IAction registerServerAction;
 	private IAction executeSQLAction;
 	private IAction commitSQLAction;
 	private IAction rollbackSQLAction;
 	private IAction closeSQLWindowTabAction;
-	
 
 	private static CyperDataStudio studio;
 
 	public static CyperDataStudio getStudio() {
 		return studio;
 	}
-	
 
 	public SQLWindow getSqlWindow() {
 		return sqlWindow;
 	}
-
 
 	public CyperDataStudio() {
 		super(null);
@@ -105,6 +106,8 @@ public class CyperDataStudio extends ApplicationWindow {
 		rollbackSQLAction = new RollbackSQLAction(this);
 		openSQLWindowAction = new TabOpenAction(this);
 		saveSQLAction = new TabSaveAction(this);
+		exitAction = new ExitAction();
+		
 		undoAction = new TextUndoAction(this);
 		redoAction = new TextRedoAction(this);
 		cutAction = new TextCutAction(this);
@@ -114,20 +117,35 @@ public class CyperDataStudio extends ApplicationWindow {
 		findReplaceAction = new FindReplaceAction(this);
 		beautifyAction = new BeautifySQLAction(this);
 		indentAction = new SelectionIndentAction(this);
-		unindentAction =new SelectionUnindentAction(this);
+		unindentAction = new SelectionUnindentAction(this);
 		commentAction = new SelectionCommentAction(this);
 		uncommentAction = new SelectionUncommentAction(this);
-		
+
 		closeSQLWindowTabAction = new TabCloseAction();
-		
+
 		this.addMenuBar();
 		this.addToolBar(SWT.FLAT);
 	}
 
 	public static void main(String[] args) {
+
 		CyperDataStudio studio = new CyperDataStudio();
+
+		// show logon dialog
+		LogonDialog logonDialog = new LogonDialog(null);
+		int ret = logonDialog.open();
+		
+		System.out.println(ret);
+		// not SWT.CANCEL!
+		if (ret == Window.CANCEL) {
+			System.exit(0);
+		}
+		
+		
+		// open main window
 		studio.setBlockOnOpen(true);
 		studio.open();
+
 	}
 
 	protected Control createContents(Composite parent) {
@@ -273,18 +291,18 @@ public class CyperDataStudio extends ApplicationWindow {
 				System.out.println(e.keyCode);
 				// 打开文件
 				/*
-				if (e.stateMask == SWT.CTRL && e.keyCode == 'o') {
-					openSQLWindowAction.run();
-
-					// 关闭当前SQL编辑器
-				}*/ /*else if (e.stateMask == SWT.CTRL && e.keyCode == 'w') {
-					System.out.println("wwwww");
-					if (sqlWindow.getSelection() != null) {
-						sqlWindow.getSelection().dispose();
-					}
-				}*/
+				 * if (e.stateMask == SWT.CTRL && e.keyCode == 'o') {
+				 * openSQLWindowAction.run();
+				 * 
+				 * // 关闭当前SQL编辑器 }
+				 *//*
+					 * else if (e.stateMask == SWT.CTRL && e.keyCode == 'w') {
+					 * System.out.println("wwwww"); if (sqlWindow.getSelection()
+					 * != null) { sqlWindow.getSelection().dispose(); } }
+					 */
 			}
 		});
+		shell.forceActive();
 		shell.forceFocus();
 	}
 
@@ -315,8 +333,7 @@ public class CyperDataStudio extends ApplicationWindow {
 		toolbar.add(unindentAction);
 		toolbar.add(commentAction);
 		toolbar.add(uncommentAction);
-		
-		
+
 		return toolbar;
 	}
 
@@ -337,10 +354,12 @@ public class CyperDataStudio extends ApplicationWindow {
 		menuBar.add(helpMenu);
 
 		// 如果menu上没有添加任何action，menu是不会显示的
-		//action只有放到了file menu上，快捷键才会激活.
+		// action只有放到了file menu上，快捷键才会激活.
 		fileMenu.add(openSQLWindowAction);
 		fileMenu.add(saveSQLAction);
-		
+		fileMenu.add(new Separator());
+		fileMenu.add(exitAction);
+
 		editMenu.add(undoAction);
 		editMenu.add(redoAction);
 		editMenu.add(new Separator());
@@ -350,18 +369,18 @@ public class CyperDataStudio extends ApplicationWindow {
 		editMenu.add(copyAction);
 		editMenu.add(pasteAction);
 		editMenu.add(selectAllAction);
-		
+
 		MenuManager selectionMenu = new MenuManager("Selection");
 		selectionMenu.add(indentAction);
 		selectionMenu.add(unindentAction);
 		selectionMenu.add(commentAction);
 		selectionMenu.add(uncommentAction);
-		
+
 		editMenu.add(selectionMenu);
-		
+
 		editMenu.add(new Separator());
 		editMenu.add(findReplaceAction);
-		
+
 		windowMenu.add(closeSQLWindowTabAction);
 
 		return menuBar;

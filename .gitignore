@@ -1,7 +1,7 @@
 *.class
 Thumbs.db
+connections.xml
 /bin
-# Package Files #
 *.zip
 *.jar
 *.war

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connections>
+	<connection name="localhost_sample">
+		<host>localhost</host>
+		<port>50000</port>
+		<database>SAMPLE</database>
+		<schema></schema>
+		<username>CYPER.YIN</username>
+		<password></password>
+	</connection>
+</connections>

@@ -1,21 +1,23 @@
 package hello.layout.aqua.util;
 
+import static hello.layout.aqua.dialog.LogonDialog.*;
+import hello.layout.aqua.Bootstrap;
+import hello.layout.aqua.dialog.connect.ConnectionInfo;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
 public class DbUtil {
-	public static Connection getConnection() {
-		try {
+	public static Connection getConnection() throws Exception {
+		if (currentConnectionName != null) {
 			Class.forName("com.ibm.db2.jcc.DB2Driver");
-
-			 return DriverManager
-			 .getConnection(
-			 "jdbc:db2://localhost:50000/SAMPLE:retrieveMessagesFromServerOnGetMessage=true;currentSchema=CYPER.YIN;",
-			 "db2admin", "db2admin");
-		} catch (Exception e) {
-			e.printStackTrace();
+			ConnectionInfo info = Bootstrap.getInstance()
+					.getConnectionInfoMap().get(currentConnectionName);
+			String url = info.toDB2String();
+			return DriverManager.getConnection(url, currentUsername,
+					currentPassword);
 		}
 		return null;
 	}

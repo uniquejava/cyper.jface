@@ -1,4 +1,25 @@
-﻿0:12 2012-7-5
+﻿17:56 2012-7-5
+新增登录对话框(界面和PL/SQL Developer的登录框相差无几)。
+数据库连接对话框！
+新增配置文件及相应的读取保存工具类。
+配置文件connections.xml的格式如下(不存在时会自动创建)
+<?xml version="1.0" encoding="UTF-8"?>
+<connections>
+	<connection name="localhost_sample">
+		<host>localhost</host>
+		<port>50000</port>
+		<database>SAMPLE</database>
+		<schema></schema>
+		<username>CYPER.YIN</username>
+		<password></password>
+	</connection>
+</connections>
+学到了一个新命令git add -A
+使用后工程中若有删除的文件，不必使用git rm了..
+来自http://stackoverflow.com/questions/2668761/git-rm-equivalent-for-add
+
+
+0:12 2012-7-5
 最近好多IT男猝死，今天我要早点休息。
 今天把工具栏整齐了，新增了一大堆Action。
 最新的UI也抓了个图扔到doc/ui目录下去了。

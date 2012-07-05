@@ -15,6 +15,7 @@ public class ImageFactory {
 	public final static String SCRIPT = "script.gif";
 	public final static String REGISTER_SERVER = "wiz_new_server.gif";
 	public final static String LOGON = "logon_1616.gif";
+	public final static String LOGON_BIG = "logon_big_1616.gif";
 	public final static String FILTER = "filter.gif";
 	public final static String SQL_EDITOR = "sql_editor.gif";
 	public final static String EXECUTE_SQL = "execute_1616.gif";

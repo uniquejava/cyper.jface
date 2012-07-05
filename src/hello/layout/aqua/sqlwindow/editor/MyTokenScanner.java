@@ -1,9 +1,9 @@
 package hello.layout.aqua.sqlwindow.editor;
 
-import static hello.layout.aqua.sqlwindow.editor.Constants.COLOR_COMMENT;
-import static hello.layout.aqua.sqlwindow.editor.Constants.COLOR_KEYWORD;
-import static hello.layout.aqua.sqlwindow.editor.Constants.COLOR_STRING;
-import static hello.layout.aqua.sqlwindow.editor.Constants.colored_keywords;
+import static hello.layout.aqua.sqlwindow.editor.EditorConstants.COLOR_COMMENT;
+import static hello.layout.aqua.sqlwindow.editor.EditorConstants.COLOR_KEYWORD;
+import static hello.layout.aqua.sqlwindow.editor.EditorConstants.COLOR_STRING;
+import static hello.layout.aqua.sqlwindow.editor.EditorConstants.colored_keywords;
 
 import java.util.ArrayList;
 import java.util.List;

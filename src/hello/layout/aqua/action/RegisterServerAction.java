@@ -2,7 +2,7 @@ package hello.layout.aqua.action;
 
 import hello.layout.aqua.CyperDataStudio;
 import hello.layout.aqua.ImageFactory;
-import hello.layout.aqua.dialog.RegisterServerDialog;
+import hello.layout.aqua.dialog.connect.ConnectionDialog;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -21,11 +21,14 @@ public class RegisterServerAction extends Action {
 
 	@Override
 	public void run() {
-		RegisterServerDialog dialog = new RegisterServerDialog(
-				studio.getShell());
-		int ret = dialog.open();
-		if (ret == SWT.OK) {
-
+		ConnectionDialog dialog;
+		try {
+			dialog = new ConnectionDialog(
+					studio.getShell());
+			int ret = dialog.open();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 	}

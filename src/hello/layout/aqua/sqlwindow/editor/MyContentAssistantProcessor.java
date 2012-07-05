@@ -1,6 +1,6 @@
 package hello.layout.aqua.sqlwindow.editor;
 
-import static hello.layout.aqua.sqlwindow.editor.Constants.assistant_keywords;
+import static hello.layout.aqua.sqlwindow.editor.EditorConstants.assistant_keywords;
 
 import java.util.ArrayList;
 import java.util.List;

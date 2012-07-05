@@ -37,28 +37,27 @@ public class RootNode implements Node {
 			Statement stmt = null;
 			try {
 				conn = DbUtil.getConnection();
+				if (conn != null) {
+					rs = conn.getMetaData().getTables(null, null, null,
+							new String[] { "TABLE" });
+					ResultSetMetaData meta = rs.getMetaData();
+					int count = meta.getColumnCount();
+					String[] tableHeaders = new String[count];
 
-				
-				rs = conn.getMetaData().getTables(null, null, null,
-						new String[] { "TABLE" });
-				ResultSetMetaData meta = rs.getMetaData();
-				int count = meta.getColumnCount();
-				String[] tableHeaders = new String[count];
+					for (int i = 0; i < count; i++) {
+						tableHeaders[i] = meta.getColumnName(i + 1);
+						// // the first row is column name info
+					}
 
-				for (int i = 0; i < count; i++) {
-					tableHeaders[i] = meta.getColumnName(i + 1);
-					// // the first row is column name info
+					while (rs.next()) {
+						String tableName = rs.getString("TABLE_NAME");
+						// System.out.println(tableName);
+						children.add(new TableNode(this, rs
+								.getString("TABLE_NAME")));
+					}
+
 				}
-
-				
-
-				while (rs.next()) {
-					String tableName = rs.getString("TABLE_NAME");
-//					System.out.println(tableName);
-					children.add(new TableNode(this, rs.getString("TABLE_NAME")));
-				}
-				
-//				 children.add(new TableNode(this, "ORG"));
+				// children.add(new TableNode(this, "ORG"));
 			} catch (Exception e) {
 				e.printStackTrace();
 			} finally {

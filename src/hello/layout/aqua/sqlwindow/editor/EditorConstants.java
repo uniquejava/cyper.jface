@@ -1,6 +1,6 @@
 package hello.layout.aqua.sqlwindow.editor;
 
-public class Constants {
+public class EditorConstants {
 	public final static String COLOR_TEXT = "text";
 	public final static String COLOR_KEYWORD = "keyword";
 	public final static String COLOR_COMMENT = "comment";
