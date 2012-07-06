@@ -10,7 +10,7 @@ public class ImageFactory {
 	public final static String REAL_PATH = System.getProperty("user.dir") + "/icons/";
 	public final static String LOGO = "logo.gif";
 	public final static String DATABASE_SERVER = "database_server.gif";
-	public final static String DATABASE = "database.gif";
+	public final static String DATABASE = "friends.gif";
 	public final static String SERVER = "server.gif";
 	public final static String SCRIPT = "script.gif";
 	public final static String REGISTER_SERVER = "wiz_new_server.gif";
@@ -52,7 +52,9 @@ public class ImageFactory {
 	public final static String PREV = "up_1616.gif";
 	public final static String NEXT = "down_1616.gif";
 	public final static String ROW_INDICATOR = "row_indicator.gif";
-	public final static String NODE_TABLE = "table_icon.gif";
+	public final static String TABLE = "table_1818.gif";
+	public final static String CLOSED_FOLDER = "directory.gif";
+	public final static String OPEN_FOLDER = "openFolder.gif";
 	
 
 	private ImageFactory() {

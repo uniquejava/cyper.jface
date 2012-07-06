@@ -6,9 +6,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 
 import hello.layout.aqua.ImageFactory;
-import hello.layout.aqua.util.Node;
 
-public class ConnectionNode implements Node {
+public class ConnectionNode extends AbstractNode {
 
 	@Override
 	public String getName() {
@@ -29,9 +28,11 @@ public class ConnectionNode implements Node {
 	public Node getParent() {
 		return null;
 	}
+
 	@Override
 	public Image getImage() {
-		return ImageFactory.loadImage(Display.getCurrent(), ImageFactory.DATABASE_SERVER);
+		return ImageFactory.loadImage(Display.getCurrent(),
+				ImageFactory.DATABASE_SERVER);
 	}
 
 }

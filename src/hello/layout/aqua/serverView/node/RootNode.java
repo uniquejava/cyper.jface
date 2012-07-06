@@ -2,11 +2,9 @@ package hello.layout.aqua.serverView.node;
 
 import hello.layout.aqua.ImageFactory;
 import hello.layout.aqua.util.DbUtil;
-import hello.layout.aqua.util.Node;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,19 +12,18 @@ import java.util.List;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 
-public class RootNode implements Node {
+public class RootNode  extends AbstractNode {
 
+	private String name;
 	private boolean init = false;
 	private List<Node> children = new ArrayList<Node>();
 
+	public RootNode(String name){
+		this.name = name;
+	}
 	@Override
 	public String getName() {
-		return "Database Servers";
-	}
-
-	@Override
-	public boolean hasChildren() {
-		return getChildren().size() > 0;
+		return this.name.toUpperCase();
 	}
 
 	@Override
@@ -38,22 +35,11 @@ public class RootNode implements Node {
 			try {
 				conn = DbUtil.getConnection();
 				if (conn != null) {
-					rs = conn.getMetaData().getTables(null, null, null,
-							new String[] { "TABLE" });
-					ResultSetMetaData meta = rs.getMetaData();
-					int count = meta.getColumnCount();
-					String[] tableHeaders = new String[count];
-
-					for (int i = 0; i < count; i++) {
-						tableHeaders[i] = meta.getColumnName(i + 1);
-						// // the first row is column name info
-					}
-
+					rs = conn.getMetaData().getTableTypes();
 					while (rs.next()) {
-						String tableName = rs.getString("TABLE_NAME");
+						String tableType = rs.getString("TABLE_TYPE");
 						// System.out.println(tableName);
-						children.add(new TableNode(this, rs
-								.getString("TABLE_NAME")));
+						children.add(new TableFolderNode(this,tableType));
 					}
 
 				}
@@ -76,7 +62,7 @@ public class RootNode implements Node {
 	@Override
 	public Image getImage() {
 		return ImageFactory.loadImage(Display.getCurrent(),
-				ImageFactory.DATABASE_SERVER);
+				ImageFactory.DATABASE);
 	}
 
 }

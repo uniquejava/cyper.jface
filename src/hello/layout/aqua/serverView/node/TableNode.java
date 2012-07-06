@@ -1,14 +1,13 @@
 package hello.layout.aqua.serverView.node;
 
+import hello.layout.aqua.ImageFactory;
+
 import java.util.List;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 
-import hello.layout.aqua.ImageFactory;
-import hello.layout.aqua.util.Node;
-
-public class TableNode implements Node {
+public class TableNode extends AbstractNode{
 	private Node parent;
 	private String name;
 	
@@ -20,11 +19,6 @@ public class TableNode implements Node {
 	@Override
 	public String getName() {
 		return name;
-	}
-
-	@Override
-	public boolean hasChildren() {
-		return false;
 	}
 
 	@Override
@@ -40,7 +34,7 @@ public class TableNode implements Node {
 	@Override
 	public Image getImage() {
 		return ImageFactory.loadImage(Display.getCurrent(),
-				ImageFactory.NODE_TABLE);
+				ImageFactory.TABLE);
 	}
 
 }

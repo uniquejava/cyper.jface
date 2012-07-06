@@ -1,4 +1,4 @@
-package hello.layout.aqua.util;
+package hello.layout.aqua.serverView.node;
 
 import java.util.List;
 
@@ -6,8 +6,10 @@ import org.eclipse.swt.graphics.Image;
 
 public interface Node {
 	public String getName();
-	
+
 	public Image getImage();
+
+	public Image getExpandedImage();
 
 	public Node getParent();
 

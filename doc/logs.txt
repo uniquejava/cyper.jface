@@ -1,4 +1,19 @@
-﻿1:57 2012-7-6
+﻿17:07 2012-7-6
+快点到16号吧!不要让我上班这么闲。。导致我的业余项目PL/SQL进度这么快。
+今天下午主要是将主界面左侧的树型结构稍微完善了一下，
+经过14天的奋战，基本定型了，比我想象的要做的快。
+接下来做
+
+(1)表结构缓存（这样当断网的时候，同样可以登录进来查看表结构等。。。）
+
+(2)按需加载（这个需要研究一下VIRTUAL TABLE）
+
+(3)根据表结构进行代码提示
+（和java的方法提示一样，除了字段拼写提示，还提示字段类型及字段的comment)
+
+
+
+1:57 2012-7-6
 complete all the functions on connection dialog.
 including clone/add/remove connection info.
 see latest screenshots for detailed information.

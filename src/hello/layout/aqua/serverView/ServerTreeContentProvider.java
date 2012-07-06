@@ -1,6 +1,6 @@
 package hello.layout.aqua.serverView;
 
-import hello.layout.aqua.util.Node;
+import hello.layout.aqua.serverView.node.Node;
 
 import java.util.List;
 

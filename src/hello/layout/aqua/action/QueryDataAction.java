@@ -1,10 +1,10 @@
 package hello.layout.aqua.action;
 
 import hello.layout.aqua.CyperDataStudio;
+import hello.layout.aqua.serverView.node.Node;
 import hello.layout.aqua.serverView.node.TableNode;
 import hello.layout.aqua.sqlwindow.SQLResultModel;
 import hello.layout.aqua.sqlwindow.SQLWindow;
-import hello.layout.aqua.util.Node;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.source.SourceViewer;

@@ -172,7 +172,7 @@ public class CyperDataStudio extends ApplicationWindow {
 				serverTree = new TreeViewer(panel);
 				serverTree.setContentProvider(new ServerTreeContentProvider());
 				serverTree.setLabelProvider(new ServerTreeLabelProvider());
-				serverTree.setInput(NodeFactory.createNodes());
+				serverTree.setInput(NodeFactory.createNodes(LogonDialog.currentConnectionName));
 				createContextMenu(panel);
 
 				serversTabItem.setControl(panel);
@@ -278,7 +278,7 @@ public class CyperDataStudio extends ApplicationWindow {
 	@Override
 	protected void configureShell(Shell shell) {
 		super.configureShell(shell);
-		shell.setText("PL/SQL Developer for DB2 0.1(build20120705)");
+		shell.setText("PL/SQL Developer for DB2 0.1(build20120706)");
 		shell.setImage(ImageFactory.loadImage(display, LOGO));
 		shell.setMaximized(true);
 		shell.addKeyListener(new KeyListener() {
