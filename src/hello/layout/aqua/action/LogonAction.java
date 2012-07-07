@@ -16,6 +16,7 @@ public class LogonAction extends Action {
 		this.studio = studio;
 		setImageDescriptor(ImageDescriptor.createFromImage(ImageFactory
 				.loadImage(Display.getDefault(), ImageFactory.LOGON)));
+		setText("Log on...");
 		setToolTipText("Log on...");
 	}
 

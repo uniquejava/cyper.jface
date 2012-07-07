@@ -13,6 +13,7 @@ import hello.layout.aqua.action.LogonAction;
 import hello.layout.aqua.action.NewSQLAction;
 import hello.layout.aqua.action.QueryDataAction;
 import hello.layout.aqua.action.SelectionCommentAction;
+import hello.layout.aqua.action.SelectionCommentUncommentAction;
 import hello.layout.aqua.action.SelectionIndentAction;
 import hello.layout.aqua.action.SelectionUncommentAction;
 import hello.layout.aqua.action.SelectionUnindentAction;
@@ -83,6 +84,7 @@ public class CyperDataStudio extends ApplicationWindow {
 	private IAction unindentAction;
 	private IAction commentAction;
 	private IAction uncommentAction;
+	private IAction commentSingleLineAction;
 
 //	private IAction registerServerAction;
 	private IAction logonAction;
@@ -129,6 +131,7 @@ public class CyperDataStudio extends ApplicationWindow {
 		unindentAction = new SelectionUnindentAction(this);
 		commentAction = new SelectionCommentAction(this);
 		uncommentAction = new SelectionUncommentAction(this);
+		commentSingleLineAction = new SelectionCommentUncommentAction(this);
 
 		closeSQLWindowTabAction = new TabCloseAction();
 
@@ -389,6 +392,7 @@ public class CyperDataStudio extends ApplicationWindow {
 		selectionMenu.add(unindentAction);
 		selectionMenu.add(commentAction);
 		selectionMenu.add(uncommentAction);
+		selectionMenu.add(commentSingleLineAction);
 
 		editMenu.add(selectionMenu);
 
@@ -399,7 +403,7 @@ public class CyperDataStudio extends ApplicationWindow {
 		sessionMenu.add(new Separator());
 		sessionMenu.add(executeAction);
 		sessionMenu.add(commitAction);
-		selectionMenu.add(rollbackAction);
+		sessionMenu.add(rollbackAction);
 
 		windowMenu.add(closeSQLWindowTabAction);
 

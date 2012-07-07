@@ -18,6 +18,7 @@ public class RollbackSQLAction extends Action {
 		this.studio = studio;
 		setImageDescriptor(ImageDescriptor.createFromImage(ImageFactory
 				.loadImage(ImageFactory.ROLLBACK)));
+		setText("Rollback");
 		setToolTipText("Rollback(Shift+F10)");
 		setAccelerator(SWT.SHIFT + SWT.F10);
 	}

@@ -19,6 +19,9 @@ import hello.example.ktable.sort.SortComparatorExample;
 import hello.example.ktable.util.ModelUtil;
 import hello.example.ktable.util.RefreshType;
 import hello.example.ktable.util.Row;
+import hello.layout.aqua.CyperDataStudio;
+import hello.layout.aqua.action.SelectionIndentAction;
+import hello.layout.aqua.action.SelectionUnindentAction;
 import hello.layout.aqua.sqlwindow.editor.EventManager;
 import hello.layout.aqua.sqlwindow.editor.MyDocument;
 import hello.layout.aqua.sqlwindow.editor.MySourceViewerConfiguration;
@@ -135,8 +138,10 @@ public class SQLWindow extends CTabFolder{
 		// 语法着色 + 代码提示
 		final SourceViewerConfiguration config = new MySourceViewerConfiguration();
 		sourceViewer.configure(config);
+		final StyledText text = sourceViewer.getTextWidget();
 
 		// 使Alt+/也能触发代码提示
+		// 如果要阻止键盘事件的默认行为，就要实现这个listener
 		VerifyKeyListener verifyKeyListener = new VerifyKeyListener() {
 			public void verifyKey(VerifyEvent event) {
 				// Check for Alt+/
@@ -149,6 +154,23 @@ public class SQLWindow extends CTabFolder{
 								.doOperation(SourceViewer.CONTENTASSIST_PROPOSALS);
 					// Veto this key press to avoid further processing
 					event.doit = false;
+				} else if(event.stateMask==SWT.SHIFT && event.keyCode == SWT.TAB){
+					event.doit = false;
+					//更改shift + tab的默认行为为反缩进
+					//只有在选中了内容时shift+TAB才有用
+					new SelectionUnindentAction(CyperDataStudio.getStudio()).run();
+					
+				} else if( event.keyCode == SWT.TAB){
+					event.doit = false;
+					//更改tab的默认行为为缩进
+					if (text.getSelectionCount()>0) {
+						new SelectionIndentAction(CyperDataStudio.getStudio()).run();
+					}else{
+						//如果没有选中内容，按tab则相当于按下几个连续空格.
+						int offset = text.getCaretOffset();
+					text.insert(Constants.TAB_SPACE);
+						text.setCaretOffset(offset + Constants.TAB_SPACE.length());
+					}
 				}
 			}
 		};
@@ -159,9 +181,8 @@ public class SQLWindow extends CTabFolder{
 
 		// read here:
 		// http://www.eclipse.org/articles/StyledText%201/article1.html
-		final StyledText text = sourceViewer.getTextWidget();
+		//需要要Tab=\t转成空格.
 		text.addKeyListener(new KeyListener() {
-
 			@Override
 			public void keyReleased(KeyEvent e) {
 
@@ -188,7 +209,8 @@ public class SQLWindow extends CTabFolder{
 									line.length(), "");
 						}
 					}
-				} /*else if (e.stateMask == SWT.CTRL && e.keyCode == 'z') {
+				} 
+				/*else if (e.stateMask == SWT.CTRL && e.keyCode == 'z') {
 					undoAction.run();
 				} else if (e.stateMask == SWT.CTRL && e.keyCode == 'y') {
 					redoAction.run();

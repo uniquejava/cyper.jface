@@ -5,6 +5,8 @@ import hello.layout.aqua.ImageFactory;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Point;
 
 public class SelectionUncommentAction extends Action {
 	private CyperDataStudio studio;
@@ -19,6 +21,13 @@ public class SelectionUncommentAction extends Action {
 
 	@Override
 	public void run() {
-//		studio.getSqlWindow().getUndoManager().undo();
+		StyledText text = studio.getSqlWindow().getSourceViewer().getTextWidget();
+		String selectionText = text.getSelectionText().trim();
+		Point range = text.getSelectionRange();
+		if (selectionText.startsWith("/*") && selectionText.endsWith("*/")) {
+			String trimedText = selectionText.substring(2);
+			trimedText = trimedText.substring(0, trimedText.length() - 2);
+			text.replaceTextRange(range.x, range.y, trimedText);
+		}
 	}
 }
