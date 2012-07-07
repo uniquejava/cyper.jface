@@ -9,6 +9,8 @@ import hello.layout.aqua.action.CommitSQLAction;
 import hello.layout.aqua.action.ExecuteSQLAction;
 import hello.layout.aqua.action.ExitAction;
 import hello.layout.aqua.action.FindReplaceAction;
+import hello.layout.aqua.action.LogonAction;
+import hello.layout.aqua.action.NewSQLAction;
 import hello.layout.aqua.action.QueryDataAction;
 import hello.layout.aqua.action.SelectionCommentAction;
 import hello.layout.aqua.action.SelectionIndentAction;
@@ -63,6 +65,8 @@ public class CyperDataStudio extends ApplicationWindow {
 	public final Display display = new Display();
 	private SQLWindow sqlWindow = null;
 	public TreeViewer serverTree;
+	
+	private IAction newSQLAction;
 	private IAction openSQLWindowAction;
 	private IAction saveSQLAction;
 	private IAction exitAction;
@@ -80,10 +84,12 @@ public class CyperDataStudio extends ApplicationWindow {
 	private IAction commentAction;
 	private IAction uncommentAction;
 
-	private IAction registerServerAction;
-	private IAction executeSQLAction;
-	private IAction commitSQLAction;
-	private IAction rollbackSQLAction;
+//	private IAction registerServerAction;
+	private IAction logonAction;
+	private IAction executeAction;
+	private IAction commitAction;
+	private IAction rollbackAction;
+	
 	private IAction closeSQLWindowTabAction;
 
 	private static CyperDataStudio studio;
@@ -100,10 +106,13 @@ public class CyperDataStudio extends ApplicationWindow {
 		super(null);
 		studio = this;
 
-		registerServerAction = new RegisterServerAction(this);
-		executeSQLAction = new ExecuteSQLAction(this);
-		commitSQLAction = new CommitSQLAction(this);
-		rollbackSQLAction = new RollbackSQLAction(this);
+//		registerServerAction = new RegisterServerAction(this);
+		logonAction = new LogonAction(this);
+		executeAction = new ExecuteSQLAction(this);
+		commitAction = new CommitSQLAction(this);
+		rollbackAction = new RollbackSQLAction(this);
+		
+		newSQLAction = new NewSQLAction(this);
 		openSQLWindowAction = new TabOpenAction(this);
 		saveSQLAction = new TabSaveAction(this);
 		exitAction = new ExitAction();
@@ -135,7 +144,6 @@ public class CyperDataStudio extends ApplicationWindow {
 		LogonDialog logonDialog = new LogonDialog(null);
 		int ret = logonDialog.open();
 		
-		System.out.println(ret);
 		// not SWT.CANCEL!
 		if (ret == Window.CANCEL) {
 			System.exit(0);
@@ -172,7 +180,7 @@ public class CyperDataStudio extends ApplicationWindow {
 				serverTree = new TreeViewer(panel);
 				serverTree.setContentProvider(new ServerTreeContentProvider());
 				serverTree.setLabelProvider(new ServerTreeLabelProvider());
-				serverTree.setInput(NodeFactory.createNodes(LogonDialog.currentConnectionName));
+				refreshServerTree();
 				createContextMenu(panel);
 
 				serversTabItem.setControl(panel);
@@ -263,6 +271,10 @@ public class CyperDataStudio extends ApplicationWindow {
 		return parent;
 	}
 
+	public void refreshServerTree() {
+		serverTree.setInput(NodeFactory.createNodes(LogonDialog.currentConnectionName));
+	}
+
 	private void createContextMenu(Composite parent) {
 		MenuManager top = new MenuManager();
 		top.add(new QueryDataAction(this));
@@ -309,13 +321,14 @@ public class CyperDataStudio extends ApplicationWindow {
 	@Override
 	protected ToolBarManager createToolBarManager(int style) {
 		ToolBarManager toolbar = new ToolBarManager(style);
-		toolbar.add(registerServerAction);
+		toolbar.add(logonAction);
 		toolbar.add(new Separator());
-		toolbar.add(executeSQLAction);
+		toolbar.add(executeAction);
 		toolbar.add(new Separator());
-		toolbar.add(commitSQLAction);
-		toolbar.add(rollbackSQLAction);
+		toolbar.add(commitAction);
+		toolbar.add(rollbackAction);
 		toolbar.add(new Separator());
+		toolbar.add(newSQLAction);
 		toolbar.add(openSQLWindowAction);
 		toolbar.add(saveSQLAction);
 		toolbar.add(new Separator());
@@ -355,6 +368,7 @@ public class CyperDataStudio extends ApplicationWindow {
 
 		// 如果menu上没有添加任何action，menu是不会显示的
 		// action只有放到了file menu上，快捷键才会激活.
+		fileMenu.add(newSQLAction);
 		fileMenu.add(openSQLWindowAction);
 		fileMenu.add(saveSQLAction);
 		fileMenu.add(new Separator());
@@ -380,6 +394,12 @@ public class CyperDataStudio extends ApplicationWindow {
 
 		editMenu.add(new Separator());
 		editMenu.add(findReplaceAction);
+		
+		sessionMenu.add(logonAction);
+		sessionMenu.add(new Separator());
+		sessionMenu.add(executeAction);
+		sessionMenu.add(commitAction);
+		selectionMenu.add(rollbackAction);
 
 		windowMenu.add(closeSQLWindowTabAction);
 

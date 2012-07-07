@@ -91,19 +91,20 @@ public class LogonDialog extends Dialog {
 		for (String key : connectionInfoMap.keySet()) {
 			databaseText.add(key);
 		}
-		if (databaseText.getItemCount()>0) {
+		if (currentConnectionName!=null) {
+			databaseText.setText(currentConnectionName);
+		}else if (databaseText.getItemCount()>0) {
 			databaseText.select(0);
 		}
-
+		
+		//自动填充用户及密码框
+		autoFillUsernameAndPassword(connectionInfoMap);
+		
 		databaseText.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				String name = databaseText.getText();
-				if (name.length() > 0) {
-					ConnectionInfo info = connectionInfoMap.get(name);
-					usernameText.setText(info.getUsername());
-					passwordText.setText(info.getPassword());
-				}
+				autoFillUsernameAndPassword(connectionInfoMap);
 			}
+
 		});
 
 		Button plusButton = new Button(group, SWT.PUSH);
@@ -122,6 +123,9 @@ public class LogonDialog extends Dialog {
 					if (databaseText.getItemCount()>0) {
 						databaseText.select(0);
 					}
+					//自动填充用户及密码框
+					autoFillUsernameAndPassword(connectionInfoMap);
+					
 				}
 			}
 		});
@@ -132,7 +136,15 @@ public class LogonDialog extends Dialog {
 
 		return parent;
 	}
-
+	private void autoFillUsernameAndPassword(
+			final Map<String, ConnectionInfo> connectionInfoMap) {
+		String name = databaseText.getText();
+		if (name.length() > 0) {
+			ConnectionInfo info = connectionInfoMap.get(name);
+			usernameText.setText(info.getUsername());
+			passwordText.setText(info.getPassword());
+		}
+	}
 	/**
 	 * 改变dialog的大小
 	 */

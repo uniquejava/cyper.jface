@@ -165,11 +165,11 @@ public class SQLWindow extends CTabFolder{
 			@Override
 			public void keyReleased(KeyEvent e) {
 
-				if (e.stateMask == SWT.CTRL && e.keyCode == 'a') {
+				/*if (e.stateMask == SWT.CTRL && e.keyCode == 'a') {
 					// 实现Ctrl + A
 					text.selectAll();
 
-				} else if (e.stateMask == SWT.CTRL && e.keyCode == 'd') {
+				} else*/ if (e.stateMask == SWT.CTRL && e.keyCode == 'd') {
 					// 模拟实现Eclipse中Ctrl+D的功能
 					// note that select.y is the length of the selection
 					Point select = text.getSelectionRange();

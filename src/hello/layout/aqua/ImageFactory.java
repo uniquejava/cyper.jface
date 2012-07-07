@@ -18,9 +18,13 @@ public class ImageFactory {
 	public final static String LOGON_BIG = "logon_big_1616.gif";
 	public final static String FILTER = "filter.gif";
 	public final static String SQL_EDITOR = "sql_editor.gif";
+	
+	
+	public final static String NEW_SQL = "new_sql_1616.gif";
 	public final static String EXECUTE_SQL = "execute_1616.gif";
 	public final static String COMMIT = "commit_1616.gif";
 	public final static String ROLLBACK = "rollback_1616.gif";
+	
 	public final static String OPEN = "open_1616.gif";
 	public final static String SAVE = "save_1616.gif";
 	public final static String REDO = "redo_1616.gif";
