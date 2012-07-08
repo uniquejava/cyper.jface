@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tables>
+	<table name="ORG" tabschema="CYPER.YIN" type="T" colcount="3" comment="org table">
+		<field name="DEPTNUMB" tbname="ORG" coltype="VARCHAR" length="20" scale="0" colno="1" nulls="true" defaults="xxx"></field>
+	</table>
+</tables>

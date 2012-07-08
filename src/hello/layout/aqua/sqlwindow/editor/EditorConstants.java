@@ -7,9 +7,7 @@ public class EditorConstants {
 	public final static String COLOR_STRING = "string";
 	
 	public final static String[] colored_keywords = {"select","delete","update","from","where","inner","join","group","order",
-		"by","asc","desc","not","exist", "and","or","is","null","distinct","having","count","sum","avg"};
-	public final static String[] assistant_keywords = {"DBEFMSVR","FMSV1_O_POOL","FMSV1_O_POOL_FUNDING","select * from "};
-	
+		"by","asc","desc","as","insert into","values","exist", "and","or","is","distinct","having"};
 	
 	public final static String[] built_in_obj = {"document","for","dojo","getElementById()"};
 }

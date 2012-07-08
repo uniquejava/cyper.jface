@@ -1,12 +1,13 @@
 package hello.layout.aqua.sqlwindow.editor;
 
-import static hello.layout.aqua.sqlwindow.editor.EditorConstants.assistant_keywords;
+import hello.cache.Field;
+import hello.cache.TableCache;
+import hello.layout.aqua.ImageFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
@@ -85,19 +86,22 @@ public class MyContentAssistantProcessor implements IContentAssistProcessor {
 		String methodPart = userEntered.substring(userEntered.indexOf(".")+1);
 		
 		List<CompletionProposal> list = new ArrayList<CompletionProposal>();
-		Map<String,List<String>> tips = ResourceManager.getTips();
 		
 		
-		if(tips.keySet().contains(objectPart)){
-			List<String> methods = tips.get(objectPart);
-			for(String method: methods){
-				if (method.toLowerCase().startsWith(methodPart.toLowerCase())) {
-					String replacementString = method;
+		//Map<String,List<String>> tips = ResourceManager.getTips();
+//		if(tips.keySet().contains(objectPart)){
+		if(TableCache.getTableColumnInfo(objectPart)!=null){
+//			List<String> methods = tips.get(objectPart);
+			Set<Field> methods = TableCache.getTableColumnInfo(objectPart).getFields();
+			
+			for(Field method: methods){
+				if (method.getName().toLowerCase().startsWith(methodPart.toLowerCase())) {
+					String replacementString = method.getName();
 					int replacementOffset = cursor - methodPart.length();
 					int replacementLength = methodPart.length();
-					int newCursorPosition = method.length()/*-1*/;//method的话有参数就放到括号里
-					String displayString = method;
-					Image image = ImageDescriptor.createFromFile(ResourceManager.class, "public_co(1).gif").createImage();
+					int newCursorPosition = method.getName().length()/*-1*/;//method的话有参数就放到括号里
+					String displayString = method.getName();
+					Image image = ImageFactory.loadImage(ImageFactory.METHOD);
 					CompletionProposal proposal = new CompletionProposal(
 							replacementString, replacementOffset,
 							replacementLength, newCursorPosition,image,displayString,null,null);
@@ -111,8 +115,9 @@ public class MyContentAssistantProcessor implements IContentAssistProcessor {
 	
 	private List<CompletionProposal> handleKeywordProposal(final int cursor, String userEntered) {
 		List<CompletionProposal> list = new ArrayList<CompletionProposal>();
+		String[] assistant_keywords = TableCache.getContentAssistantKeywords();
 		for (int i = 0; i < assistant_keywords.length; i++) {
-			if (assistant_keywords[i].startsWith(userEntered)) {
+			if (assistant_keywords[i].toLowerCase().startsWith(userEntered.toLowerCase())) {
 				String replacementString = assistant_keywords[i];
 				int replacementOffset = cursor - userEntered.length();
 				int replacementLength = userEntered.length();

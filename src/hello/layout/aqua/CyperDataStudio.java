@@ -4,6 +4,10 @@ import static hello.layout.aqua.ImageFactory.LOGO;
 import static hello.layout.aqua.ImageFactory.SCRIPT;
 import static hello.layout.aqua.ImageFactory.SERVER;
 import static hello.layout.aqua.util.GridDataFactory.gd4text;
+import hello.cache.Table;
+import hello.cache.TableBuilder;
+import hello.cache.TableCache;
+import hello.filter.TableFilter;
 import hello.layout.aqua.action.BeautifySQLAction;
 import hello.layout.aqua.action.CommitSQLAction;
 import hello.layout.aqua.action.ExecuteSQLAction;
@@ -12,20 +16,19 @@ import hello.layout.aqua.action.FindReplaceAction;
 import hello.layout.aqua.action.LogonAction;
 import hello.layout.aqua.action.NewSQLAction;
 import hello.layout.aqua.action.QueryDataAction;
+import hello.layout.aqua.action.RollbackSQLAction;
 import hello.layout.aqua.action.SelectionCommentAction;
 import hello.layout.aqua.action.SelectionCommentUncommentAction;
 import hello.layout.aqua.action.SelectionIndentAction;
 import hello.layout.aqua.action.SelectionUncommentAction;
 import hello.layout.aqua.action.SelectionUnindentAction;
+import hello.layout.aqua.action.TabCloseAction;
+import hello.layout.aqua.action.TabOpenAction;
+import hello.layout.aqua.action.TabSaveAction;
 import hello.layout.aqua.action.TextCopyAction;
 import hello.layout.aqua.action.TextCutAction;
 import hello.layout.aqua.action.TextPasteAction;
 import hello.layout.aqua.action.TextRedoAction;
-import hello.layout.aqua.action.RegisterServerAction;
-import hello.layout.aqua.action.RollbackSQLAction;
-import hello.layout.aqua.action.TabCloseAction;
-import hello.layout.aqua.action.TabOpenAction;
-import hello.layout.aqua.action.TabSaveAction;
 import hello.layout.aqua.action.TextSelectAllAction;
 import hello.layout.aqua.action.TextUndoAction;
 import hello.layout.aqua.dialog.LogonDialog;
@@ -35,6 +38,9 @@ import hello.layout.aqua.serverView.ServerTreeContentProvider;
 import hello.layout.aqua.serverView.ServerTreeLabelProvider;
 import hello.layout.aqua.serverView.node.NodeFactory;
 import hello.layout.aqua.sqlwindow.SQLWindow;
+
+import java.util.Arrays;
+import java.util.Map;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.MenuManager;
@@ -48,8 +54,8 @@ import org.eclipse.swt.custom.CTabFolder2Adapter;
 import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -61,17 +67,19 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.kitten.core.C;
 
 public class CyperDataStudio extends ApplicationWindow {
 	public final Display display = new Display();
+	private TableFilter tableFilter;
 	private SQLWindow sqlWindow = null;
 	public TreeViewer serverTree;
-	
+
 	private IAction newSQLAction;
 	private IAction openSQLWindowAction;
 	private IAction saveSQLAction;
 	private IAction exitAction;
-	
+
 	private IAction undoAction;
 	private IAction redoAction;
 	private IAction cutAction;
@@ -86,12 +94,12 @@ public class CyperDataStudio extends ApplicationWindow {
 	private IAction uncommentAction;
 	private IAction commentSingleLineAction;
 
-//	private IAction registerServerAction;
+	// private IAction registerServerAction;
 	private IAction logonAction;
 	private IAction executeAction;
 	private IAction commitAction;
 	private IAction rollbackAction;
-	
+
 	private IAction closeSQLWindowTabAction;
 
 	private static CyperDataStudio studio;
@@ -104,21 +112,29 @@ public class CyperDataStudio extends ApplicationWindow {
 		return sqlWindow;
 	}
 
+	public TableFilter getTableFilter() {
+		return tableFilter;
+	}
+
+	public void setTableFilter(TableFilter tableFilter) {
+		this.tableFilter = tableFilter;
+	}
+
 	public CyperDataStudio() {
 		super(null);
 		studio = this;
 
-//		registerServerAction = new RegisterServerAction(this);
+		// registerServerAction = new RegisterServerAction(this);
 		logonAction = new LogonAction(this);
 		executeAction = new ExecuteSQLAction(this);
 		commitAction = new CommitSQLAction(this);
 		rollbackAction = new RollbackSQLAction(this);
-		
+
 		newSQLAction = new NewSQLAction(this);
 		openSQLWindowAction = new TabOpenAction(this);
 		saveSQLAction = new TabSaveAction(this);
 		exitAction = new ExitAction();
-		
+
 		undoAction = new TextUndoAction(this);
 		redoAction = new TextRedoAction(this);
 		cutAction = new TextCutAction(this);
@@ -146,13 +162,19 @@ public class CyperDataStudio extends ApplicationWindow {
 		// show logon dialog
 		LogonDialog logonDialog = new LogonDialog(null);
 		int ret = logonDialog.open();
-		
+
 		// not SWT.CANCEL!
 		if (ret == Window.CANCEL) {
 			System.exit(0);
 		}
-		
-		
+
+		// FIXME bad smell.
+		if (logonDialog.currentConnectionName.toLowerCase().indexOf("fms") != -1) {
+			studio.setTableFilter(TableFilter.FMS);
+		} else {
+			studio.setTableFilter(TableFilter.DEFAULT);
+		}
+
 		// open main window
 		studio.setBlockOnOpen(true);
 		studio.open();
@@ -275,7 +297,8 @@ public class CyperDataStudio extends ApplicationWindow {
 	}
 
 	public void refreshServerTree() {
-		serverTree.setInput(NodeFactory.createNodes(LogonDialog.currentConnectionName));
+		serverTree.setInput(NodeFactory.createNodes(
+				LogonDialog.currentConnectionName, this.tableFilter));
 	}
 
 	private void createContextMenu(Composite parent) {
@@ -296,29 +319,26 @@ public class CyperDataStudio extends ApplicationWindow {
 		shell.setText("PL/SQL Developer for DB2 0.1(build20120706)");
 		shell.setImage(ImageFactory.loadImage(display, LOGO));
 		shell.setMaximized(true);
-		shell.addKeyListener(new KeyListener() {
-			@Override
-			public void keyReleased(KeyEvent e) {
-			}
-
-			@Override
-			public void keyPressed(KeyEvent e) {
-				System.out.println(e.keyCode);
-				// 打开文件
-				/*
-				 * if (e.stateMask == SWT.CTRL && e.keyCode == 'o') {
-				 * openSQLWindowAction.run();
-				 * 
-				 * // 关闭当前SQL编辑器 }
-				 *//*
-					 * else if (e.stateMask == SWT.CTRL && e.keyCode == 'w') {
-					 * System.out.println("wwwww"); if (sqlWindow.getSelection()
-					 * != null) { sqlWindow.getSelection().dispose(); } }
-					 */
-			}
-		});
 		shell.forceActive();
 		shell.forceFocus();
+		shell.addDisposeListener(new DisposeListener() {
+			@Override
+			public void widgetDisposed(DisposeEvent e) {
+				Map<String,Table> tables = TableCache.tables;
+				if (tables.size()>0) {
+					try {
+						System.out.println("save cache:" + tables.size());
+						String cacheFile = C.UD+"/cache_dir/"+LogonDialog.currentConnectionName+"/";
+						for(String key: tables.keySet()){
+							new TableBuilder(cacheFile + key + ".xml").saveTables(Arrays.asList(tables.get(key)));
+						}
+					} catch (Exception e1) {
+						e1.printStackTrace();
+					}
+				}
+				
+			}
+		});
 	}
 
 	@Override
@@ -398,7 +418,7 @@ public class CyperDataStudio extends ApplicationWindow {
 
 		editMenu.add(new Separator());
 		editMenu.add(findReplaceAction);
-		
+
 		sessionMenu.add(logonAction);
 		sessionMenu.add(new Separator());
 		sessionMenu.add(executeAction);

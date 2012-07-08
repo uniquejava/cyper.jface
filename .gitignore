@@ -2,6 +2,8 @@
 Thumbs.db
 connections.xml
 /bin
+/cache_dir
+/config
 *.zip
 *.jar
 *.war

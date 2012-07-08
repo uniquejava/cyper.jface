@@ -60,6 +60,9 @@ public class ImageFactory {
 	public final static String CLOSED_FOLDER = "directory.gif";
 	public final static String OPEN_FOLDER = "openFolder.gif";
 	
+	public final static String METHOD = "method.gif";
+	
+	
 
 	private ImageFactory() {
 	}

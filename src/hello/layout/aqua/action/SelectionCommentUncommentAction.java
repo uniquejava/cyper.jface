@@ -1,9 +1,6 @@
 package hello.layout.aqua.action;
 
-import javax.sound.sampled.Line;
-
 import hello.layout.aqua.CyperDataStudio;
-import hello.layout.aqua.ImageFactory;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
@@ -15,7 +12,7 @@ public class SelectionCommentUncommentAction extends Action {
 
 	public SelectionCommentUncommentAction(CyperDataStudio studio) {
 		this.studio = studio;
-		setText("Comment/Uncomment");
+		setText("Auto comment");
 		setToolTipText("Comment single line(Ctrl+/)");
 		setAccelerator(SWT.CTRL | '/');
 	}
