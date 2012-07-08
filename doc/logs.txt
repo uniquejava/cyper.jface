@@ -1,4 +1,8 @@
 ﻿21:21 2012-7-8
+big changes today, not stable..
+(1)initial code for Cache
+(2)initial code for Filter
+(3)content assistant update.
 
 
 3:23 2012-7-8
