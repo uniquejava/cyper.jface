@@ -1,66 +1,80 @@
-基本目标：
-learn the layout of SWT,
-make UI prototype for "Cyper Data Studio"
+1. What's Cyper Data Studio?
+Cyper Data Studio is a Shanzhai(http://en.wikipedia.org/wiki/Shanzhai) version of PL/SQL Developer.
+PL/SQL Developer is a commercial database client for Oracle, whereas Cyper Data Studio is for any JDBC compliant database.
+and is free and open source.
 
-紧急需求
-Aqua Data Studio没有代码提示的功能，我都不知道以pool开头的表有哪些，
+什么是Cyper Data Studio
+Cyper Data Studio是山寨版的PL/SQL Developer，后者是Oracle的一个收费版客户端工具.
+而前者支持任何与JDBC兼容的数据库，并且它是免费和开源的.
+
+2. Why create another wheel?
+At least no free and good DB2 client found from my side.
+How about Aqua Data Studio? oh, no content assistant.
+How about Data source tools from RSA? it's too heavy and slow.I can't put up with it.
+
+为什么要重复发明轮子?
+Aqua Data Studio没有代码提示的功能，我都不知道以XX开头的表有哪些，
 而RSA的数据库工具太TMD的卡了，不敢冒RSA崩溃需要重启的风险，综上所述急需CyperDataStudio！！
 URGENT！
 
-the latest UI please see pictures under doc/ui/*.jpg
+3. How does it look like?
+the latest UI please see screen shots here: https://github.com/uniquejava/cyper.jface/tree/master/doc/ui
+最新的界面请猛击这里：https://github.com/uniquejava/cyper.jface/tree/master/doc/ui
 
-the latest change log, please see doc/logs.txt
+the latest change log, please see here: https://github.com/uniquejava/cyper.jface/blob/master/doc/logs.txt
+最新的开发日志请猛击这里：https://github.com/uniquejava/cyper.jface/blob/master/doc/logs.txt
 
-1.server list(tree viewer)
-服务器列表
+4. What's the features?
+As far as I can imagine, it will include the following functions:
+1)create/update/delete table.
+包含各种DDL/DML
 
-2.sql highlighter
+2)sql highlighter
 SQL语法高亮
 
-3.sql beautifier
+3)sql beautifier
 SQL格式化
 
-4.sql content assisstant
+4)sql content assistant
 SQL代码提示
 
-5.comment/uncomment
-SQL注释/反注释
+5)comment/uncomment,indent/unindent
+SQL注释/取消注释，缩进/反缩进
 
-6.execute sql with ? placeholder
+6)execute sql with ? placeholder
 能执行带?号的SQL :)
 
-7.cached table schema(offline mode)
+7)cached table schema(offline mode)
 缓存表的schema，以加速代码提示功能（不卡才是王道），并能离线使用.
 
-8.lock/unlock
+8)lock/unlock
 仿PL/SQL developer的锁定和解锁模式
 
-9.add row
+9)add row
 添加行，可以复制行，并粘贴行。
 
-10.delete row
+10)delete row
 删除行
 
-11.sort row
+11)sort row
 排序
 
-12.single column/ row selection and copy
+12)single column/ row selection and copy
 可以选中单行/单列进行复制
 
-13.view single row
+13)view single row
 查看单行：当行太长时，可以竖着查看一行的数据
 
-14.export cvs/excel
+14)export cvs/excel
 可以将表中数据直接复制或导出到excel
 
-15.copy to java
+15)copy to java
 仿PL/SQL的功能，可以将SQL语句拷贝成+号连接的字符串，方便在java代码中直接使用
 
-
-16.code generator
+16)code generation
 基于Freemarker模板的代码生成（能做的东西就多了）
 
-...
+and more...
 还有很多，比如拖动表到SQL Editor，会出来一个菜单，上面的一堆功能都想实现
 又比如在SQL Editor中随便输入表名，点右键出来的快捷菜单，，上面的一堆功能都想实现
 
@@ -68,6 +82,4 @@ SQL注释/反注释
 总之,希望可以将PL/SQL Developer的功能移植到本工具中
 
 以便在其它DB上也可以使用。
-
-
 
