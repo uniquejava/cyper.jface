@@ -23,6 +23,8 @@ public class FindReplaceAction extends Action {
 	
 	@Override
 	public void run() {
-		new FindAndReplace(studio, studio.getShell()).open();
+		if (studio.getSqlWindow().getSelectionIndex()!=-1) {
+			new FindAndReplace(studio, studio.getShell()).open();
+		}
 	}
 }

@@ -14,6 +14,7 @@ import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IWhitespaceDetector;
 import org.eclipse.jface.text.rules.IWordDetector;
 import org.eclipse.jface.text.rules.MultiLineRule;
+import org.eclipse.jface.text.rules.NumberRule;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
@@ -41,6 +42,9 @@ public class MyTokenScanner extends RuleBasedScanner {
 				return Character.isWhitespace(c);
 			}
 		}));
+		
+		//数字的
+		rules.add(new NumberRule(new Token(ta4String)));
 
 		// 字符串的
 		rules.add(new SingleLineRule("'", "'", new Token(ta4String), '\\'));
@@ -72,7 +76,10 @@ public class MyTokenScanner extends RuleBasedScanner {
 			}
 		};
 		
-		WordRule keywordRule = new WordRule(detector, Token.UNDEFINED, true);
+		
+		//此处必须用Token.WHITESPACE，不能用Token.UNDEFINED
+		//用Token.UNDEFINED，比如oror的后一个or会变色..
+		WordRule keywordRule = new WordRule(detector, Token.WHITESPACE, true);
 		
 		for (int i = 0; i < colored_keywords.length; i++) {
 			keywordRule.addWord(colored_keywords[i], new Token(ta4Keyword));

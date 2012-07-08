@@ -1,8 +1,25 @@
-﻿21:21 2012-7-8
+﻿0:10 2012-7-9
+(1)bug fix:avoid ArrayIndexOutOfBoundsException when no sql editor is active
+确保在没有SQL Editor打开的情况下，点各种按钮都不会报错.
+
+(2)add NumberRule for MyTokenScanner
+增加NumberRule用来对SQL中的数字进行着色
+
+(3)implement BeautifySQLAction
+格式化选中的SQL，使用了Hibernate的实现，效果一般
+see here for more information:
+http://stackoverflow.com/questions/312552/looking-for-an-embeddable-sql-beautifier-or-reformatter
+
+21:21 2012-7-8
 big changes today, not stable..
 (1)initial code for Cache
+开始实现缓存
+
 (2)initial code for Filter
+开始实现过滤器
+
 (3)content assistant update.
+开始对表及字段进行代码提示
 
 
 3:23 2012-7-8

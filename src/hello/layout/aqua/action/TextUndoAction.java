@@ -5,6 +5,7 @@ import hello.layout.aqua.ImageFactory;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.swt.SWT;
 
 public class TextUndoAction extends Action {
@@ -21,6 +22,9 @@ public class TextUndoAction extends Action {
 
 	@Override
 	public void run() {
-		studio.getSqlWindow().getUndoManager().undo();
+		IUndoManager mgr = studio.getSqlWindow().getUndoManager();
+		if (mgr!=null) {
+			mgr.undo();
+		}
 	}
 }

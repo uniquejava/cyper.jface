@@ -8,7 +8,7 @@ import hello.layout.aqua.sqlwindow.SQLWindow;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.text.TextViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
@@ -42,57 +42,57 @@ public class ExecuteSQLAction extends Action {
 			sw.setMaximized(false);
 		}
 
-		int folderIndex = sw.getSelectionIndex();
-		SourceViewer sourceViewer = sw.textViewerList.get(folderIndex);
-		StyledText text = sourceViewer.getTextWidget();
-		// show result
-		CTabItem item = sw.getSelection();
-		if (item != null) {
-			SQLResultModel model = (SQLResultModel) sw.tableList.get(folderIndex).getModel();
-			// 尝试使用用户选中的文本
-			String selectionText = text.getSelectionText().trim();
-			// 如果没有选中任何文本，则执行光标所在的SQL
-			if (selectionText.length() == 0) {
-				selectionText = text.getText();
-				// 如果有多个SQL,则只执行光标所在行的SQL
-				// note that select.y is the length of the selection
-				int lineCount = text.getLineCount();
-				Point select = text.getSelectionRange();
-				//lineNumber是从0开始的.
-				int currentLineNumber = text.getLineAtOffset(select.x);
-				
-				String currentLineText = text.getLine(currentLineNumber).trim();
-				// 又分两种情况，光标所在的行有分号
-				if (currentLineText.endsWith(";")) {
-					// 向前找SQL的开头
-					int startLineOffset = getStartLineOffset(text,currentLineNumber);
-					//先后找SQL的结尾（就是当前行行尾)
-					int lineEndOffset = getLineEndOffset(text, currentLineNumber);
+		TextViewer tv = sw.getSourceViewer();
+		if (tv!=null) {
+			StyledText text = tv.getTextWidget();
+			// show result
+			CTabItem item = sw.getSelection();
+			if (item != null) {
+				SQLResultModel model = (SQLResultModel) sw.getTable().getModel();
+				// 尝试使用用户选中的文本
+				String selectionText = text.getSelectionText().trim();
+				// 如果没有选中任何文本，则执行光标所在的SQL
+				if (selectionText.length() == 0) {
+					selectionText = text.getText();
+					// 如果有多个SQL,则只执行光标所在行的SQL
+					// note that select.y is the length of the selection
+					Point select = text.getSelectionRange();
+					//lineNumber是从0开始的.
+					int currentLineNumber = text.getLineAtOffset(select.x);
 					
-					selectionText = text.getText(startLineOffset,lineEndOffset);
-					
-				} else if (currentLineText.length() == 0) {
-					// 光标所在的行是空白行,什么也不做.
-					selectionText = "";
-					
-				} else {
-					// 光标所在的木有分号
-					// 向前找SQL的开头
-					int startLineOffset = getStartLineOffset(text,currentLineNumber);
-					// 向后找 SQL的结尾
-					int endLineOffset = getEndLineOffset(text,currentLineNumber);
-					
-					selectionText = text.getText(startLineOffset,endLineOffset);
+					String currentLineText = text.getLine(currentLineNumber).trim();
+					// 又分两种情况，光标所在的行有分号
+					if (currentLineText.endsWith(";")) {
+						// 向前找SQL的开头
+						int startLineOffset = getStartLineOffset(text,currentLineNumber);
+						//先后找SQL的结尾（就是当前行行尾)
+						int lineEndOffset = getLineEndOffset(text, currentLineNumber);
+						
+						selectionText = text.getText(startLineOffset,lineEndOffset);
+						
+					} else if (currentLineText.length() == 0) {
+						// 光标所在的行是空白行,什么也不做.
+						selectionText = "";
+						
+					} else {
+						// 光标所在的木有分号
+						// 向前找SQL的开头
+						int startLineOffset = getStartLineOffset(text,currentLineNumber);
+						// 向后找 SQL的结尾
+						int endLineOffset = getEndLineOffset(text,currentLineNumber);
+						
+						selectionText = text.getText(startLineOffset,endLineOffset);
+					}
 				}
-			}
 
-			// 对SQL的后处理
-			selectionText = selectionText.trim();
-			if (selectionText.endsWith(";")) {
-				selectionText = selectionText.substring(0,selectionText.length() - 1);
-			}
-			if (selectionText.length() > 0) {
-				model.executeSQL(selectionText);
+				// 对SQL的后处理
+				selectionText = selectionText.trim();
+				if (selectionText.endsWith(";")) {
+					selectionText = selectionText.substring(0,selectionText.length() - 1);
+				}
+				if (selectionText.length() > 0) {
+					model.executeSQL(selectionText);
+				}
 			}
 		}
 

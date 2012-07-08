@@ -5,6 +5,7 @@ import hello.layout.aqua.ImageFactory;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.text.TextViewer;
 import org.eclipse.swt.SWT;
 
 public class TextCopyAction extends Action {
@@ -21,6 +22,9 @@ public class TextCopyAction extends Action {
 
 	@Override
 	public void run() {
-		studio.getSqlWindow().getSourceViewer().getTextWidget().copy();
+		TextViewer tv = studio.getSqlWindow().getSourceViewer();
+		if (tv != null) {
+			tv.getTextWidget().copy();
+		}
 	}
 }

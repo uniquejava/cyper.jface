@@ -3,6 +3,7 @@ package hello.layout.aqua.action;
 import hello.layout.aqua.CyperDataStudio;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.text.TextViewer;
 import org.eclipse.swt.SWT;
 
 public class TextSelectAllAction extends Action {
@@ -16,6 +17,9 @@ public class TextSelectAllAction extends Action {
 
 	@Override
 	public void run() {
-		studio.getSqlWindow().getSourceViewer().getTextWidget().selectAll();
+		TextViewer tv = studio.getSqlWindow().getSourceViewer();
+		if (tv != null) {
+			tv.getTextWidget().selectAll();
+		}
 	}
 }

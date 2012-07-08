@@ -5,6 +5,7 @@ import hello.layout.aqua.ImageFactory;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.text.TextViewer;
 import org.eclipse.swt.SWT;
 
 public class TextPasteAction extends Action {
@@ -21,6 +22,9 @@ public class TextPasteAction extends Action {
 
 	@Override
 	public void run() {
-		studio.getSqlWindow().getSourceViewer().getTextWidget().paste();
+		TextViewer tv = studio.getSqlWindow().getSourceViewer();
+		if (tv != null) {
+			tv.getTextWidget().paste();
+		}
 	}
 }

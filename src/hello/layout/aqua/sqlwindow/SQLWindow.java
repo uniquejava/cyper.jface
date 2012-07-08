@@ -68,39 +68,53 @@ import de.kupzog.ktable.KTableCellSelectionListener;
 import de.kupzog.ktable.KTableSortComparator;
 import de.kupzog.ktable.SWTX;
 
-public class SQLWindow extends CTabFolder{
+public class SQLWindow extends CTabFolder {
 	public SQLWindow(Composite parent, int style) {
 		super(parent, style);
 	}
 
 	public static int seq = 1;
 	public final static int[] DEFAULT_WEIGHTS = new int[] { 45, 55 };
-	public final static int[] INITIAL_WEIGHTS = new int[] { 100,0 };
+	public final static int[] INITIAL_WEIGHTS = new int[] { 100, 0 };
 	public List<CTabItem> tabItemList = new ArrayList<CTabItem>();
-	
+
 	public EventManager eventManager = new EventManager(this);
 	public List<SourceViewer> textViewerList = new ArrayList<SourceViewer>();
 	public List<MyDocument> documentList = new ArrayList<MyDocument>();
 	public List<IUndoManager> undoManagerList = new ArrayList<IUndoManager>();
 	public List<KTable> tableList = new ArrayList<KTable>();
 
-
+	public KTable getTable() {
+		int index = getSelectionIndex();
+		if (index!=-1) {
+			return tableList.get(index);
+		}
+		return null;
+	}
 	public TextViewer getSourceViewer() {
 		int index = getSelectionIndex();
-		return textViewerList.get(index);
+		if (index!=-1) {
+			return textViewerList.get(index);
+		}
+		return null;
 	}
-
 	public MyDocument getDocument() {
 		int index = getSelectionIndex();
-		return documentList.get(index);
+		if (index != -1) {
+			return documentList.get(index);
+		}
+		return null;
 	}
 
 	public IUndoManager getUndoManager() {
 		int index = getSelectionIndex();
-		return undoManagerList.get(index);
+		if (index!=-1) {
+			return undoManagerList.get(index);
+		}
+		return null;
 	}
 
-	public CTabItem createNewTabItem(String title,boolean maximize) {
+	public CTabItem createNewTabItem(String title, boolean maximize) {
 		// right top
 		// sql editor
 		final CTabItem tabItem = new CTabItem(this, SWT.None);
@@ -154,22 +168,26 @@ public class SQLWindow extends CTabFolder{
 								.doOperation(SourceViewer.CONTENTASSIST_PROPOSALS);
 					// Veto this key press to avoid further processing
 					event.doit = false;
-				} else if(event.stateMask==SWT.SHIFT && event.keyCode == SWT.TAB){
+				} else if (event.stateMask == SWT.SHIFT
+						&& event.keyCode == SWT.TAB) {
 					event.doit = false;
-					//更改shift + tab的默认行为为反缩进
-					//只有在选中了内容时shift+TAB才有用
-					new SelectionUnindentAction(CyperDataStudio.getStudio()).run();
-					
-				} else if( event.keyCode == SWT.TAB){
+					// 更改shift + tab的默认行为为反缩进
+					// 只有在选中了内容时shift+TAB才有用
+					new SelectionUnindentAction(CyperDataStudio.getStudio())
+							.run();
+
+				} else if (event.keyCode == SWT.TAB) {
 					event.doit = false;
-					//更改tab的默认行为为缩进
-					if (text.getSelectionCount()>0) {
-						new SelectionIndentAction(CyperDataStudio.getStudio()).run();
-					}else{
-						//如果没有选中内容，按tab则相当于按下几个连续空格.
+					// 更改tab的默认行为为缩进
+					if (text.getSelectionCount() > 0) {
+						new SelectionIndentAction(CyperDataStudio.getStudio())
+								.run();
+					} else {
+						// 如果没有选中内容，按tab则相当于按下几个连续空格.
 						int offset = text.getCaretOffset();
-					text.insert(Constants.TAB_SPACE);
-						text.setCaretOffset(offset + Constants.TAB_SPACE.length());
+						text.insert(Constants.TAB_SPACE);
+						text.setCaretOffset(offset
+								+ Constants.TAB_SPACE.length());
 					}
 				}
 			}
@@ -181,16 +199,17 @@ public class SQLWindow extends CTabFolder{
 
 		// read here:
 		// http://www.eclipse.org/articles/StyledText%201/article1.html
-		//需要要Tab=\t转成空格.
+		// 需要要Tab=\t转成空格.
 		text.addKeyListener(new KeyListener() {
 			@Override
 			public void keyReleased(KeyEvent e) {
 
-				/*if (e.stateMask == SWT.CTRL && e.keyCode == 'a') {
-					// 实现Ctrl + A
-					text.selectAll();
-
-				} else*/ if (e.stateMask == SWT.CTRL && e.keyCode == 'd') {
+				/*
+				 * if (e.stateMask == SWT.CTRL && e.keyCode == 'a') { // 实现Ctrl
+				 * + A text.selectAll();
+				 * 
+				 * } else
+				 */if (e.stateMask == SWT.CTRL && e.keyCode == 'd') {
 					// 模拟实现Eclipse中Ctrl+D的功能
 					// note that select.y is the length of the selection
 					Point select = text.getSelectionRange();
@@ -209,18 +228,16 @@ public class SQLWindow extends CTabFolder{
 									line.length(), "");
 						}
 					}
-				} 
-				/*else if (e.stateMask == SWT.CTRL && e.keyCode == 'z') {
-					undoAction.run();
-				} else if (e.stateMask == SWT.CTRL && e.keyCode == 'y') {
-					redoAction.run();
-				} else if (e.stateMask == SWT.CTRL && e.keyCode == 'f') {
-					findAction.run();
-				} else if (e.stateMask == SWT.CTRL && e.keyCode == 'o') {
-					openAction.run();
-				} else if (e.stateMask == SWT.CTRL && e.keyCode == 's') {
-					saveAction.run();
-				}*/
+				}
+				/*
+				 * else if (e.stateMask == SWT.CTRL && e.keyCode == 'z') {
+				 * undoAction.run(); } else if (e.stateMask == SWT.CTRL &&
+				 * e.keyCode == 'y') { redoAction.run(); } else if (e.stateMask
+				 * == SWT.CTRL && e.keyCode == 'f') { findAction.run(); } else
+				 * if (e.stateMask == SWT.CTRL && e.keyCode == 'o') {
+				 * openAction.run(); } else if (e.stateMask == SWT.CTRL &&
+				 * e.keyCode == 's') { saveAction.run(); }
+				 */
 			}
 
 			@Override
@@ -418,11 +435,11 @@ public class SQLWindow extends CTabFolder{
 		// ----important------------
 		if (!maximize) {
 			right.setWeights(DEFAULT_WEIGHTS);
-		}else{
+		} else {
 			right.setWeights(INITIAL_WEIGHTS);
 			setMaximized(true);
 		}
-		
+
 		tabItem.setControl(right);
 
 		tabItemList.add(tabItem);

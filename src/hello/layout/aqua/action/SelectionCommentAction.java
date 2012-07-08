@@ -5,6 +5,7 @@ import hello.layout.aqua.ImageFactory;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.text.TextViewer;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Point;
 
@@ -21,13 +22,15 @@ public class SelectionCommentAction extends Action {
 
 	@Override
 	public void run() {
-		StyledText text = studio.getSqlWindow().getSourceViewer()
-				.getTextWidget();
-		String selectionText = text.getSelectionText();
-		Point range = text.getSelectionRange();
-		if (selectionText.trim().length() > 0) {
-			if (!selectionText.startsWith("/*")&& !selectionText.endsWith("*/")) {
-				text.replaceTextRange(range.x, range.y, "/*" + selectionText+ "*/");
+		TextViewer tv = studio.getSqlWindow().getSourceViewer();
+		if (tv!=null) {
+			StyledText text = tv.getTextWidget();
+			String selectionText = text.getSelectionText();
+			Point range = text.getSelectionRange();
+			if (selectionText.trim().length() > 0) {
+				if (!selectionText.startsWith("/*")&& !selectionText.endsWith("*/")) {
+					text.replaceTextRange(range.x, range.y, "/*" + selectionText+ "*/");
+				}
 			}
 		}
 	}
