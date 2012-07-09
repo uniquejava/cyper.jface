@@ -1,3 +1,12 @@
+TODO:
+>登录框的信息没有记忆功能,每次启动时还要选database。麻烦。
+>SQL Editor没有右键菜单，要把copy,paste这样的功能扔上去
+>打开SQL Tab时，editor没有自动获得输入焦点，还得点一下，不爽。
+>执行的时候没有进度条，且界面假死。。
+>不能执行update/delete语句。。。
+>出错的时候没有控制台。
+
+
 1. What's Cyper Data Studio?
 Cyper Data Studio is a Shanzhai(http://en.wikipedia.org/wiki/Shanzhai) version of PL/SQL Developer.
 PL/SQL Developer is a commercial database client for Oracle, whereas Cyper Data Studio is for any JDBC compliant database.

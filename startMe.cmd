@@ -1,13 +1,13 @@
 @echo off
 setlocal enabledelayedexpansion
-SET JAVA=java
+SET JAVA=start javaw
 SET LIBPATH=lib
 SET CORE=./CyperDataStudio.jar
 set CP=%CORE%;
 for /f %%i in ('dir /b %LIBPATH%\*.jar^|sort') do (
    set CP=!CP!%LIBPATH%\%%i;
 )
-set OPTS=-Duser.timezone=GMT+8 -Xmx64m
+set OPTS=-Duser.timezone=GMT+8 -Xmx128m
 set MAIN=hello.layout.aqua.CyperDataStudio
 echo ===============================================================================
 echo.
