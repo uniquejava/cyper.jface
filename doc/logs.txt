@@ -1,4 +1,9 @@
-﻿0:10 2012-7-9
+﻿18:37 2012-7-9
+cache: almost done.
+基本完成了Cache.
+
+
+0:10 2012-7-9
 (1)bug fix:avoid ArrayIndexOutOfBoundsException when no sql editor is active
 确保在没有SQL Editor打开的情况下，点各种按钮都不会报错.
 
@@ -12,14 +17,9 @@ http://stackoverflow.com/questions/312552/looking-for-an-embeddable-sql-beautifi
 
 21:21 2012-7-8
 big changes today, not stable..
-(1)initial code for Cache
-开始实现缓存
-
-(2)initial code for Filter
-开始实现过滤器
-
-(3)content assistant update.
-开始对表及字段进行代码提示
+initial code for Cache
+initial code for Filter
+content assistant update.
 
 
 3:23 2012-7-8

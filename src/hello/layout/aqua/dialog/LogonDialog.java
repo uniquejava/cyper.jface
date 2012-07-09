@@ -1,7 +1,9 @@
 package hello.layout.aqua.dialog;
 
 import static hello.layout.aqua.sqlwindow.Constants.PRODUCT_NAME;
+import hello.filter.TableFilter;
 import hello.layout.aqua.Bootstrap;
+import hello.layout.aqua.CyperDataStudio;
 import hello.layout.aqua.ImageFactory;
 import hello.layout.aqua.dialog.connect.ConnectionDialog;
 import hello.layout.aqua.dialog.connect.ConnectionInfo;
@@ -143,6 +145,13 @@ public class LogonDialog extends Dialog {
 			ConnectionInfo info = connectionInfoMap.get(name);
 			usernameText.setText(info.getUsername());
 			passwordText.setText(info.getPassword());
+			
+			// FIXME bad smell.
+			if (name.toLowerCase().indexOf("fms") != -1) {
+				CyperDataStudio.getStudio().setTableFilter(TableFilter.FMS);
+			} else {
+				CyperDataStudio.getStudio().setTableFilter(TableFilter.DEFAULT);
+			}
 		}
 	}
 	/**

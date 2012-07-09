@@ -67,7 +67,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
-import org.kitten.core.C;
 
 public class CyperDataStudio extends ApplicationWindow {
 	public final Display display = new Display();
@@ -166,13 +165,6 @@ public class CyperDataStudio extends ApplicationWindow {
 		// not SWT.CANCEL!
 		if (ret == Window.CANCEL) {
 			System.exit(0);
-		}
-
-		// FIXME bad smell.
-		if (logonDialog.currentConnectionName.toLowerCase().indexOf("fms") != -1) {
-			studio.setTableFilter(TableFilter.FMS);
-		} else {
-			studio.setTableFilter(TableFilter.DEFAULT);
 		}
 
 		// open main window
@@ -324,19 +316,7 @@ public class CyperDataStudio extends ApplicationWindow {
 		shell.addDisposeListener(new DisposeListener() {
 			@Override
 			public void widgetDisposed(DisposeEvent e) {
-				Map<String,Table> tables = TableCache.tables;
-				if (tables.size()>0) {
-					try {
-						System.out.println("save cache:" + tables.size());
-						String cacheFile = C.UD+"/cache_dir/"+LogonDialog.currentConnectionName+"/";
-						for(String key: tables.keySet()){
-							new TableBuilder(cacheFile + key + ".xml").saveTables(Arrays.asList(tables.get(key)));
-						}
-					} catch (Exception e1) {
-						e1.printStackTrace();
-					}
-				}
-				
+				TableCache.getInstance().persist();
 			}
 		});
 	}

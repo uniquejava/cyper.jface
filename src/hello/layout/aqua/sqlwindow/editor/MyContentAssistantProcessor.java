@@ -90,9 +90,10 @@ public class MyContentAssistantProcessor implements IContentAssistProcessor {
 		
 		//Map<String,List<String>> tips = ResourceManager.getTips();
 //		if(tips.keySet().contains(objectPart)){
-		if(TableCache.getTableColumnInfo(objectPart)!=null){
+		final TableCache cache = TableCache.getInstance();
+		if(cache.getTableColumnInfo(objectPart)!=null){
 //			List<String> methods = tips.get(objectPart);
-			Set<Field> methods = TableCache.getTableColumnInfo(objectPart).getFields();
+			Set<Field> methods = cache.getTableColumnInfo(objectPart).getFields();
 			
 			for(Field method: methods){
 				if (method.getName().toLowerCase().startsWith(methodPart.toLowerCase())) {
@@ -115,7 +116,8 @@ public class MyContentAssistantProcessor implements IContentAssistProcessor {
 	
 	private List<CompletionProposal> handleKeywordProposal(final int cursor, String userEntered) {
 		List<CompletionProposal> list = new ArrayList<CompletionProposal>();
-		String[] assistant_keywords = TableCache.getContentAssistantKeywords();
+		final TableCache cache = TableCache.getInstance();
+		String[] assistant_keywords = cache.getContentAssistantKeywords();
 		for (int i = 0; i < assistant_keywords.length; i++) {
 			if (assistant_keywords[i].toLowerCase().startsWith(userEntered.toLowerCase())) {
 				String replacementString = assistant_keywords[i];
