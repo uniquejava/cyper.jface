@@ -4,10 +4,9 @@ import static hello.layout.aqua.ImageFactory.LOGO;
 import static hello.layout.aqua.ImageFactory.SCRIPT;
 import static hello.layout.aqua.ImageFactory.SERVER;
 import static hello.layout.aqua.util.GridDataFactory.gd4text;
-import hello.cache.Table;
-import hello.cache.TableBuilder;
 import hello.cache.TableCache;
 import hello.filter.TableFilter;
+import hello.layout.aqua.action.AboutAction;
 import hello.layout.aqua.action.BeautifySQLAction;
 import hello.layout.aqua.action.CommitSQLAction;
 import hello.layout.aqua.action.ExecuteSQLAction;
@@ -38,9 +37,6 @@ import hello.layout.aqua.serverView.ServerTreeContentProvider;
 import hello.layout.aqua.serverView.ServerTreeLabelProvider;
 import hello.layout.aqua.serverView.node.NodeFactory;
 import hello.layout.aqua.sqlwindow.SQLWindow;
-
-import java.util.Arrays;
-import java.util.Map;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.MenuManager;
@@ -100,6 +96,8 @@ public class CyperDataStudio extends ApplicationWindow {
 	private IAction rollbackAction;
 
 	private IAction closeSQLWindowTabAction;
+	
+	private IAction aboutAction;
 
 	private static CyperDataStudio studio;
 
@@ -149,6 +147,7 @@ public class CyperDataStudio extends ApplicationWindow {
 		commentSingleLineAction = new SelectionCommentUncommentAction(this);
 
 		closeSQLWindowTabAction = new TabCloseAction();
+		aboutAction = new AboutAction();
 
 		this.addMenuBar();
 		this.addToolBar(SWT.FLAT);
@@ -308,7 +307,7 @@ public class CyperDataStudio extends ApplicationWindow {
 	@Override
 	protected void configureShell(Shell shell) {
 		super.configureShell(shell);
-		shell.setText("PL/SQL Developer for DB2 0.1(build20120706)");
+		shell.setText("PL/SQL Developer for DB2(build20120709)");
 		shell.setImage(ImageFactory.loadImage(display, LOGO));
 		shell.setMaximized(true);
 		shell.forceActive();
@@ -406,6 +405,8 @@ public class CyperDataStudio extends ApplicationWindow {
 		sessionMenu.add(rollbackAction);
 
 		windowMenu.add(closeSQLWindowTabAction);
+		
+		helpMenu.add(aboutAction);
 
 		return menuBar;
 	}

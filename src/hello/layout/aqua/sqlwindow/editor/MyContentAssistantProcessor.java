@@ -2,10 +2,14 @@ package hello.layout.aqua.sqlwindow.editor;
 
 import hello.cache.Field;
 import hello.cache.TableCache;
+import hello.filter.FmsRule;
+import hello.layout.aqua.CyperDataStudio;
 import hello.layout.aqua.ImageFactory;
+import hello.layout.aqua.util.SqlUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.jface.text.BadLocationException;
@@ -47,12 +51,21 @@ public class MyContentAssistantProcessor implements IContentAssistProcessor {
 		String userEntered = getUserEntered(offset, doc, sb);
 		
 		System.out.println("userEntered="+userEntered);
-
+		
+		String schema = CyperDataStudio.getStudio().getTableFilter().getRule().getSchemaPattern();
+		if (userEntered.toUpperCase().startsWith(schema)) {
+			userEntered = userEntered.substring(schema.length()+1);
+		}
+		System.out.println("userEntered="+userEntered);
+		
 		boolean methoding = userEntered.indexOf(".")!=-1;
 		
 		List<CompletionProposal> list = new ArrayList<CompletionProposal>();
 		if (methoding) {
-			list = handleMethodingProposal(cursor, userEntered);
+			String wholeSqlBlock = SqlUtil.getWholeSqlBlock(viewer.getTextWidget());
+			Map<String,String> aliasMapping = SqlUtil.getAliasMapping(wholeSqlBlock);
+			
+			list = handleMethodingProposal(cursor, userEntered,aliasMapping);
 		}else{
 			list = handleKeywordProposal(cursor, userEntered);
 		}
@@ -79,9 +92,15 @@ public class MyContentAssistantProcessor implements IContentAssistProcessor {
 		return userEntered;
 	}
 
-	private List<CompletionProposal> handleMethodingProposal(final int cursor, String userEntered) {
+	private List<CompletionProposal> handleMethodingProposal(final int cursor, String userEntered, Map<String, String> aliasMapping) {
 		//点号前的内容
 		String objectPart = userEntered.substring(0,userEntered.indexOf("."));
+		
+		//是否有别名映射，如果是，根据别名找到真实表名.
+		if (aliasMapping.get(objectPart.toUpperCase())!=null) {
+			objectPart = aliasMapping.get(objectPart.toUpperCase());
+		}
+		
 		//点号后的内容，可以为空白
 		String methodPart = userEntered.substring(userEntered.indexOf(".")+1);
 		

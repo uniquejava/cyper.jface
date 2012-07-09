@@ -1,5 +1,6 @@
 package hello.cache;
 
+import hello.filter.FmsRule;
 import hello.layout.aqua.CyperDataStudio;
 import hello.layout.aqua.dialog.LogonDialog;
 import hello.layout.aqua.util.DbUtil;
@@ -216,6 +217,14 @@ public class TableCache {
 		if (assistant_keywords.get(cName) == null) {
 			List<String> nameList = new ArrayList<String>();
 			nameList.add("select * from ");
+			//FIXME bad smell
+			
+			String schema = CyperDataStudio.getStudio().getTableFilter().getRule().getSchemaPattern();
+			if (StringUtil.isNotBlank(schema)) {
+				nameList.add(schema);
+			}
+			nameList.add("CURRENT TIMESTAMP");
+			
 			nameList.addAll(getAllTableNames());
 
 			String[] keywords = new String[nameList.size()];
