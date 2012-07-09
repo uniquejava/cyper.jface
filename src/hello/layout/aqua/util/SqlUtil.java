@@ -109,7 +109,11 @@ public class SqlUtil {
 			// 向后找 SQL的结尾
 			int endLineOffset = getEndLineOffset(text, currentLineNumber);
 
-			selectionText = text.getText(startLineOffset, endLineOffset);
+			System.out.println("startLineOffset=" + startLineOffset);
+			System.out.println("endLineOffset=" + endLineOffset);
+			
+			//-1，让光标从最后一行的行首移到前一行的行尾。。
+			selectionText = text.getText(startLineOffset, endLineOffset-1);
 		}
 		return selectionText;
 	}
@@ -128,6 +132,8 @@ public class SqlUtil {
 	 */
 	private static int getEndLineOffset(StyledText text, int currentLineNumber) {
 		int lineCount = text.getLineCount();
+		System.out.println("lineCount=" + lineCount);
+		System.out.println("currentLineNumber=" + currentLineNumber);
 		// 当前已经是最后一行，则将nextLineOffset指向行尾
 		if (currentLineNumber == lineCount - 1) {
 			return getLineEndOffset(text, currentLineNumber);
@@ -158,6 +164,12 @@ public class SqlUtil {
 			foundEndLine++;
 		}
 		
+		System.out.println("foundEndLine=" + foundEndLine);
+		// foundEndLine已经是最后一行，则将nextLineOffset指向行尾
+		//foundEndLine是从0开始的，而lineCount从1开始的	
+		if (foundEndLine >= lineCount ) {
+			foundEndLine = lineCount-1;
+		}
 		System.out.println("foundEndLine=" + foundEndLine);
 		int endLineOffset = text.getOffsetAtLine(foundEndLine);
 		return endLineOffset;

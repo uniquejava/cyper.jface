@@ -12,8 +12,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -176,13 +176,19 @@ public class TableCache {
 	}
 	
 	public Set<String> getAllTableNames() {
-		Set<String> keySets = new HashSet<String>();
+		Set<String> keySets = new LinkedHashSet<String>();
 		String cName = LogonDialog.currentConnectionName;
 		Assert.notNull(cName);
 
 		Map<String, Map<String, Table>> cNameMap = cache.get(cName);
+		
+		//FIXME FMS:view first
+		keySets.addAll(cNameMap.get("VIEW").keySet());
+		
 		for (String type : cNameMap.keySet()) {
-			keySets.addAll(cNameMap.get(type).keySet());
+			if (!type.equals("VIEW")) {
+				keySets.addAll(cNameMap.get(type).keySet());
+			}
 		}
 
 		return keySets;

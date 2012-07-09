@@ -1,0 +1,6 @@
+SQL Editor没有右键菜单，要加并把copy,paste这样的功能扔上去
+
+打开新的SQL Tab时，editor没有自动获得输入焦点，还得点一下，郁闷！
+
+
+

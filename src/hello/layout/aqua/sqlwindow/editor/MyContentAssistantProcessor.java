@@ -21,6 +21,7 @@ import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
+import org.kitten.core.util.StringUtil;
 
 public class MyContentAssistantProcessor implements IContentAssistProcessor {
 
@@ -53,8 +54,10 @@ public class MyContentAssistantProcessor implements IContentAssistProcessor {
 		System.out.println("userEntered="+userEntered);
 		
 		String schema = CyperDataStudio.getStudio().getTableFilter().getRule().getSchemaPattern();
-		if (userEntered.toUpperCase().startsWith(schema)) {
-			userEntered = userEntered.substring(schema.length()+1);
+		if (StringUtil.isNotBlank(schema)) {
+			if (userEntered.toUpperCase().startsWith(schema)) {
+				userEntered = userEntered.substring(schema.length()+1);
+			}
 		}
 		System.out.println("userEntered="+userEntered);
 		
