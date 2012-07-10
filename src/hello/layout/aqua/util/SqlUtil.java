@@ -12,9 +12,9 @@ import org.kitten.core.util.StringUtil;
 public class SqlUtil {
 	public static Map<String, String> getAliasMapping(String sql) {
 		System.out.println(sql);
-		
+
 		Map<String, String> aliasMapping = new HashMap<String, String>();
-		
+
 		if (StringUtil.isBlank(sql)) {
 			return aliasMapping;
 		}
@@ -40,31 +40,31 @@ public class SqlUtil {
 		// 拆分
 		String[] tables = tablePart.split(",");
 
-		
 		for (int i = 0; i < tables.length; i++) {
 			String str = tables[i].trim();
 			int space = str.indexOf(" ");
 			if (space != -1) {
 				String alias = str.substring(space + 1);
 				String table = str.substring(0, space);
-				
-				//如果表名前有schema，去掉schema
-				if (table.indexOf(".")!=-1) {
-					table = table.substring(table.indexOf(".")+1);
+
+				// 如果表名前有schema，去掉schema
+				if (table.indexOf(".") != -1) {
+					table = table.substring(table.indexOf(".") + 1);
 				}
 				aliasMapping.put(alias, table);
 			}
 		}
-		
+
 		return aliasMapping;
 	}
 
 	public static void main(String[] args) {
 		// 没有where的情况
-		 String sql = "select p. from Person p";
+		String sql = "select p. from Person p";
 
 		// 有where的情况
-//		String sql = "select * from Zhang_s  z, LiShi    as l,Wangwu where z.";
+		// String sql =
+		// "select * from Zhang_s  z, LiShi    as l,Wangwu where z.";
 		Map<String, String> map = SqlUtil.getAliasMapping(sql);
 		System.out.println(map.keySet());
 		System.out.println(map.get("L"));
@@ -96,7 +96,8 @@ public class SqlUtil {
 			// 先后找SQL的结尾（就是当前行行尾)
 			int lineEndOffset = getLineEndOffset(text, currentLineNumber);
 
-			selectionText = text.getText(startLineOffset, lineEndOffset);
+			//注意-1的含义，深入体会HelloLineOffset.java
+			selectionText = text.getText(startLineOffset, lineEndOffset-1);
 
 		} else if (currentLineText.length() == 0) {
 			// 光标所在的行是空白行,什么也不做.
@@ -108,71 +109,75 @@ public class SqlUtil {
 			int startLineOffset = getStartLineOffset(text, currentLineNumber);
 			// 向后找 SQL的结尾
 			int endLineOffset = getEndLineOffset(text, currentLineNumber);
-
+			
 			System.out.println("startLineOffset=" + startLineOffset);
 			System.out.println("endLineOffset=" + endLineOffset);
-			
-			//-1，让光标从最后一行的行首移到前一行的行尾。。
-			selectionText = text.getText(startLineOffset, endLineOffset-1);
+
+			// 注意-3的含义，深入体会HelloLineOffset.java
+			selectionText = text.getText(startLineOffset, endLineOffset - 3);
 		}
 		return selectionText;
 	}
 
 	private static int getLineEndOffset(StyledText text, int currentLineNumber) {
 		return text.getOffsetAtLine(currentLineNumber)
-				+ text.getLine(currentLineNumber).length() - 1;
+				+ text.getLine(currentLineNumber).length();
 	}
 
 	/**
 	 * 返回结束行下一行的开头位置.
 	 * 
 	 * @param text
-	 * @param currentLineNumber
+	 * @param currentLineIndex
 	 * @return
 	 */
-	private static int getEndLineOffset(StyledText text, int currentLineNumber) {
+	private static int getEndLineOffset(StyledText text, int currentLineIndex) {
+		// 否则找寻下一行
+		int result = currentLineIndex;
+
 		int lineCount = text.getLineCount();
 		System.out.println("lineCount=" + lineCount);
-		System.out.println("currentLineNumber=" + currentLineNumber);
+		System.out.println("currentLineIndex=" + currentLineIndex);
 		// 当前已经是最后一行，则将nextLineOffset指向行尾
-		if (currentLineNumber == lineCount - 1) {
-			return getLineEndOffset(text, currentLineNumber);
-		}
+		if (result >= lineCount - 1) {
+			result = lineCount;
+		} else {
+			while (result < lineCount-1) {
+				result = result + 1;
+				String nextLineText = text.getLine(result).trim();
+				System.out.println("nextLine=[" + nextLineText + "]");
 
-		// 否则找寻下一行
-		int foundEndLine = currentLineNumber + 1;
-		while (foundEndLine < lineCount) {
-			String nextLine = text.getLine(foundEndLine).trim();
-			System.out.println("nextLine=[" + nextLine + "]");
-			// 已经是SQL结束行
-			if (nextLine.endsWith(";")) {
-				foundEndLine = foundEndLine + 1;
-				break;
-			} else {
-				// 已经是SQL结束行的下一行
-				String[] sqlStart = Constants.SQL_START;
-				for (int j = 0; j < sqlStart.length; j++) {
-					if (nextLine.startsWith(sqlStart[j])) {
+				// 已经是SQL结束行
+				if (nextLineText.endsWith(";")) {
+					break;
+				} else {
+					// 已经是SQL结束行的下一行
+					String[] sqlStart = Constants.SQL_START;
+					for (int j = 0; j < sqlStart.length; j++) {
+						if (nextLineText.startsWith(sqlStart[j])) {
+							break;
+						}
+					}
+					if (nextLineText.startsWith("--")
+							|| nextLineText.startsWith("/*")
+							|| nextLineText.endsWith("*/")
+							|| nextLineText.endsWith(";")) {
 						break;
 					}
 				}
-				if (nextLine.startsWith("--") || nextLine.startsWith("/*")
-						|| nextLine.endsWith("*/") || nextLine.endsWith(";")) {
-					break;
-				}
 			}
-			foundEndLine++;
 		}
+
+		System.out.println("foundEndLine=" + result);
+		// 在下面的情况下，会报异常，因此NND要注意传入的result的范围
+		// lineIndex < 0 || lineIndex > 0 && lineIndex >= content.getLineCount()
 		
-		System.out.println("foundEndLine=" + foundEndLine);
-		// foundEndLine已经是最后一行，则将nextLineOffset指向行尾
-		//foundEndLine是从0开始的，而lineCount从1开始的	
-		if (foundEndLine >= lineCount ) {
-			foundEndLine = lineCount-1;
+		//请看HelloLineOffset的例子
+		if (result == lineCount) {
+			return text.getOffsetAtLine(result-1) + text.getLine(result-1).length() + text.getLineDelimiter().length();
+		} else {
+			return text.getOffsetAtLine(result);
 		}
-		System.out.println("foundEndLine=" + foundEndLine);
-		int endLineOffset = text.getOffsetAtLine(foundEndLine);
-		return endLineOffset;
 	}
 
 	/**

@@ -1,4 +1,12 @@
-﻿23:42 2012-7-9
+﻿22:29 2012-7-10
+1.bug fix（关于StyledText，Offset的研究）
+这里有个入门文章：http://www.eclipse.org/articles/StyledText%201/article1.html
+
+2.出异常时现在会给个提示框
+3.SQL Editor现在能自动获得输入焦点
+4.查询时已经做了最大数为1000的限制（得搞个properties文件，等以后加了PreferenceDialog再说）
+
+23:42 2012-7-9
 
 2005.7.9~2012.7.9
 今天是工作7周年纪念日，

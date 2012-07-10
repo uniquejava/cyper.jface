@@ -8,10 +8,10 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 
-public class NewSQLAction extends Action {
+public class TabNewAction extends Action {
 	private CyperDataStudio studio;
 
-	public NewSQLAction(CyperDataStudio studio) {
+	public TabNewAction(CyperDataStudio studio) {
 		this.studio = studio;
 		setImageDescriptor(ImageDescriptor.createFromImage(ImageFactory
 				.loadImage(ImageFactory.NEW_SQL)));

@@ -13,7 +13,7 @@ import hello.layout.aqua.action.ExecuteSQLAction;
 import hello.layout.aqua.action.ExitAction;
 import hello.layout.aqua.action.FindReplaceAction;
 import hello.layout.aqua.action.LogonAction;
-import hello.layout.aqua.action.NewSQLAction;
+import hello.layout.aqua.action.TabNewAction;
 import hello.layout.aqua.action.QueryDataAction;
 import hello.layout.aqua.action.RollbackSQLAction;
 import hello.layout.aqua.action.SelectionCommentAction;
@@ -127,7 +127,7 @@ public class CyperDataStudio extends ApplicationWindow {
 		commitAction = new CommitSQLAction(this);
 		rollbackAction = new RollbackSQLAction(this);
 
-		newSQLAction = new NewSQLAction(this);
+		newSQLAction = new TabNewAction(this);
 		openSQLWindowAction = new TabOpenAction(this);
 		saveSQLAction = new TabSaveAction(this);
 		exitAction = new ExitAction();

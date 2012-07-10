@@ -58,8 +58,9 @@ public class SQLResultModelSort extends KTableSortedModel {
 
 	/**
 	 * Initialize the underlying model
+	 * @throws Exception 
 	 */
-	public SQLResultModelSort() {
+	public SQLResultModelSort() throws Exception {
 		setColumnWidth(0, 20);
 		setColumnWidth(1, 40);
 		list = new MyDao().querySql("select * from ORG");

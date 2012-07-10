@@ -1,6 +1,5 @@
 package hello.cache;
 
-import hello.filter.FmsRule;
 import hello.layout.aqua.CyperDataStudio;
 import hello.layout.aqua.dialog.LogonDialog;
 import hello.layout.aqua.util.DbUtil;
@@ -229,7 +228,9 @@ public class TableCache {
 			if (StringUtil.isNotBlank(schema)) {
 				nameList.add(schema);
 			}
+			nameList.add("COUNT(*)");
 			nameList.add("CURRENT TIMESTAMP");
+			nameList.add("FETCH FIRST 1 ROWS ONLY");
 			
 			nameList.addAll(getAllTableNames());
 

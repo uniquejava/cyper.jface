@@ -36,7 +36,7 @@ public class Main {
 	public final Shell shell = new Shell(display);
 	private ViewForm viewForm = null;
 
-	public Main() {
+	public Main() throws Exception {
 		configureShell();
 		viewForm = new ViewForm(shell, SWT.NONE);
 		viewForm.setTopCenterSeparate(true);
@@ -139,7 +139,7 @@ public class Main {
 		display.dispose();
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		Main test = new Main();
 		test.open();
 	}

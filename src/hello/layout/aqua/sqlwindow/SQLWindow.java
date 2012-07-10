@@ -460,6 +460,8 @@ public class SQLWindow extends CTabFolder {
 		});
 
 		this.setSelection(tabItem);
+		//fix bug 打开SQL Tab时，editor没有自动获得输入焦点，还得点一下，不爽。
+		text.setFocus();
 
 		return tabItem;
 	}

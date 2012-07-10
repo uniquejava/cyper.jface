@@ -81,7 +81,7 @@ public class SQLResultModel extends KTableSortedModel {
 		refreshWithSort(new ArrayList<Row>(), 1, RefreshType.INIT);
 	}
 	
-	public void executeSQL(String sql){
+	public void executeSQL(String sql) throws Exception{
 		List<Row> list = new MyDao().querySql(sql);
 		refreshWithSort(list, 1, RefreshType.INIT);
 	}

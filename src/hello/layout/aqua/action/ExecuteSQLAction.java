@@ -8,6 +8,7 @@ import hello.layout.aqua.sqlwindow.SQLWindow;
 import hello.layout.aqua.util.SqlUtil;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.swt.SWT;
@@ -15,6 +16,7 @@ import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Point;
+import org.kitten.core.util.ErrorUtil;
 
 public class ExecuteSQLAction extends Action {
 	private CyperDataStudio studio;
@@ -64,7 +66,12 @@ public class ExecuteSQLAction extends Action {
 					selectionText = selectionText.substring(0,selectionText.length() - 1);
 				}
 				if (selectionText.length() > 0) {
-					model.executeSQL(selectionText);
+					try {
+						model.executeSQL(selectionText);
+					} catch (Exception e) {
+						String msg = ErrorUtil.getError(e);
+						MessageDialog.openError(studio.getShell(),"Oops",msg);
+					}
 				}
 			}
 		}

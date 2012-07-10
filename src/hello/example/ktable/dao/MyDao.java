@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MyDao {
-	public List<Row> querySql(String sql) {
+	public List<Row> querySql(String sql) throws Exception {
 
 		List<Row> result = new ArrayList<Row>();
 		Connection conn = null;
@@ -53,16 +53,20 @@ public class MyDao {
 					row.put(tableHeaders[i], rs.getString(tableHeaders[i]));
 				}
 				result.add(row);
+				
+				if (rowNum==1000) {
+					break;
+				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw e;
 		} finally {
 			DbUtil.close(rs, stmt, conn);
 		}
 		return result;
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		MyDao dao = new MyDao();
 		List<Row> list = dao.querySql("select * from EMPLOYEE");
 		for (Row row : list) {

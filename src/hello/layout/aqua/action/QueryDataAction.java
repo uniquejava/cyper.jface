@@ -7,10 +7,12 @@ import hello.layout.aqua.sqlwindow.SQLResultModel;
 import hello.layout.aqua.sqlwindow.SQLWindow;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
+import org.kitten.core.util.ErrorUtil;
 
 public class QueryDataAction extends Action {
 	private CyperDataStudio studio;
@@ -59,7 +61,12 @@ public class QueryDataAction extends Action {
 		CTabItem item = sw.getSelection();
 		if (item!=null) {
 			SQLResultModel model = (SQLResultModel) sw.tableList.get(folderIndex).getModel();
-			model.executeSQL(text.getTextWidget().getText().trim());
+			try {
+				model.executeSQL(text.getTextWidget().getText().trim());
+			} catch (Exception e) {
+				String msg = ErrorUtil.getError(e);
+				MessageDialog.openError(studio.getShell(),"Oops",msg);
+			}
 		}
 		
 	}
