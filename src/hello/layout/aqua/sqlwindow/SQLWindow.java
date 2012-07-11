@@ -121,7 +121,8 @@ public class SQLWindow extends CTabFolder {
 		tabItem.setText(title);
 		tabItem.setImage(loadImage(SQL_EDITOR));
 
-		SashForm right = new SashForm(this, SWT.VERTICAL);
+		SashForm right = new SashForm(this, SWT.VERTICAL|SWT.SMOOTH);
+		right.SASH_WIDTH = 5;
 		right.setLayout(new FillLayout());
 
 		Composite sqlEditorPanel = new Composite(right, SWT.NONE);

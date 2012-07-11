@@ -4,6 +4,8 @@ connections.xml
 /bin
 /cache_dir
 /config
+/src/finance
+/src/hello/fms
 *.zip
 *.jar
 *.war

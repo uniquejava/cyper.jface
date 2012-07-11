@@ -4,9 +4,18 @@ TODO:
 >SQL Editor没有右键菜单，要把copy,paste这样的功能扔上去
 >~~打开SQL Tab时，editor没有自动获得输入焦点，还得点一下，不爽~~。
 >执行的时候没有进度条，且界面假死。。
->不能执行update/delete语句。。。
->出错的时候没有控制台。
+>加入多console，以便输出错误信息。
 >增加将表名从树上拖动到editor的功能
+>SQL中混有注释时要能过滤掉注释继续执行.
+>事务支持,每个窗口一个事务.
+>可以中断/取消查询
+>执行update/delete语句。。。
+>~想试试swt-table,至少暂时去掉编辑功能,目前的ktable代码惨不忍睹，需要简化.
+>保存提示，在editor关闭之前需要提示是否保存.
+>将状态信息移至底部，显示sash的border
+>尝试去掉com.ibm.icu_4.2.1.v20100412.jar这个6M多的jar，改为自己实现文本双击事件
+>git，学习使用git的gui客户端，学习打tag，分支，合并，fork代码.
+>git，学习markdown，我上面 打了~~怎么没有删除线
 
 
 1. What's Cyper Data Studio?

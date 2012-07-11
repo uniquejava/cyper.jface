@@ -1,4 +1,33 @@
-﻿22:29 2012-7-10
+﻿1:28 2012-7-12
+因工作需要，加入了与项目相关的代码（已经加入gitignore了）
+今天晚上准备重做显示列表部分
+从蛋疼的ktable改为更容易维护的swt table.
+目前进展顺利。
+已经完成了
+(1)切换到列模式(使用了StackLayout)
+(2)查看上一行
+(3)查看下一行这3个功能。
+而且表格更加漂亮了。
+see new screen shot
+
+ 
+TODO:
+ SELECT DISTINCT U.USER_SERIAL_NO, U.USER_CTY, U.USER_ROLE, U.CTY_AUTH,
+    U.POOL_TYPE_AUTH, U.RPT_BUSN_UNIT_AUTH, U.IOT_AUTH, U.IMT_AUTH,
+    R.ACCESS_TYPE, U.WW_AUTH_INDC
+    FROM
+         DBEFMSVR.FMSV1_R_ROLE_SEC AS R
+         INNER JOIN DBEFMSVR.FMSV1_X_WW_USER_ROLE_SEC AS U
+         ON RTRIM(U.USER_ROLE) = RTRIM(R.USER_ROLE)
+         AND R.ACCESS_TYPE = 'PBP'
+    WHERE RTRIM(U.) = '206694'
+     AND RTRIM(U.USER_CTY) = '641'
+    WITH UR; 
+ 这里打U不能提示，希望改进  
+ (第一步至少要将xx AS yy带AS的部分加入别名映射，另外ON是关键字，需要高亮)
+    
+    
+22:29 2012-7-10
 1.bug fix（关于StyledText，Offset的研究）
 这里有个入门文章：http://www.eclipse.org/articles/StyledText%201/article1.html
 

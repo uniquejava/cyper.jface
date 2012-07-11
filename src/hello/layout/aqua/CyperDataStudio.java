@@ -6,6 +6,7 @@ import static hello.layout.aqua.ImageFactory.SERVER;
 import static hello.layout.aqua.util.GridDataFactory.gd4text;
 import hello.cache.TableCache;
 import hello.filter.TableFilter;
+import hello.fms.action.QueryEmployeeAction;
 import hello.layout.aqua.action.AboutAction;
 import hello.layout.aqua.action.BeautifySQLAction;
 import hello.layout.aqua.action.CommitSQLAction;
@@ -98,6 +99,9 @@ public class CyperDataStudio extends ApplicationWindow {
 	private IAction closeSQLWindowTabAction;
 	
 	private IAction aboutAction;
+	
+	//FMS
+	private IAction queryEmployeeAction;
 
 	private static CyperDataStudio studio;
 
@@ -148,6 +152,8 @@ public class CyperDataStudio extends ApplicationWindow {
 
 		closeSQLWindowTabAction = new TabCloseAction();
 		aboutAction = new AboutAction();
+		
+		queryEmployeeAction = new QueryEmployeeAction(this);
 
 		this.addMenuBar();
 		this.addToolBar(SWT.FLAT);
@@ -360,12 +366,14 @@ public class CyperDataStudio extends ApplicationWindow {
 		MenuManager editMenu = new MenuManager("&Edit");
 		MenuManager sessionMenu = new MenuManager("&Session");
 		MenuManager windowMenu = new MenuManager("&Window");
+		MenuManager fmsMenu = new MenuManager("F&MS");
 		MenuManager helpMenu = new MenuManager("&Help");
 
 		menuBar.add(fileMenu);
 		menuBar.add(editMenu);
 		menuBar.add(sessionMenu);
 		menuBar.add(windowMenu);
+		menuBar.add(fmsMenu);
 		menuBar.add(helpMenu);
 
 		// 如果menu上没有添加任何action，menu是不会显示的
@@ -407,6 +415,11 @@ public class CyperDataStudio extends ApplicationWindow {
 		windowMenu.add(closeSQLWindowTabAction);
 		
 		helpMenu.add(aboutAction);
+		
+		fmsMenu.add(queryEmployeeAction);
+		
+		
+		
 
 		return menuBar;
 	}

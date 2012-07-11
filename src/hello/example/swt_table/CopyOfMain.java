@@ -19,7 +19,9 @@ import hello.example.ktable.util.HeaderRow;
 import hello.example.ktable.util.Row;
 import hello.layout.aqua.util.GridDataFactory;
 
+import java.text.Collator;
 import java.util.List;
+import java.util.Locale;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
@@ -29,7 +31,9 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -43,28 +47,15 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
-/**
- * (1)杜绝table.setSelection()这样的代码， selection太丑了，我们不需要selection，只需要row indicator.<br>
- * (2)杜绝table.getSelectionIndex(),table不再有任何selection.<br>
- * (3)维护一个全局的rowIndicator，在text focus时给它设定为当前的行号.
- * 
- * @author cyper.yin
- * 
- */
-public class Main {
+public class CopyOfMain {
 
-	private static final String COL_NUMBER = "colNumber";
-	private static final String ROW_NUMBER = "rowNumber";
 	private static final int SORT_ICON_WIDTH = 30;
 	public static final Display display = new Display();
 	public final Shell shell = new Shell(display);
 	private ViewForm viewForm = null;
 	private List<Row> list;
-	private Text prevFocusedText;
-	private Text focusedText;
-	private Text[][] textArray = null;
 
-	public Main() throws Exception {
+	public CopyOfMain() throws Exception {
 		configureShell();
 		viewForm = new ViewForm(shell, SWT.NONE);
 		viewForm.setTopCenterSeparate(true);
@@ -92,8 +83,8 @@ public class Main {
 		final ToolItem wyj = new ToolItem(toolbar, SWT.PUSH);
 		wyj.setImage(loadImage(WYJ));
 
-		final ToolItem viewSingleRow = new ToolItem(toolbar, SWT.CHECK);
-		viewSingleRow.setImage(loadImage(COLUMN_MODE));
+		final ToolItem cm = new ToolItem(toolbar, SWT.CHECK);
+		cm.setImage(loadImage(COLUMN_MODE));
 
 		final ToolItem prev = new ToolItem(toolbar, SWT.PUSH);
 		prev.setImage(loadImage(PREV));
@@ -125,64 +116,84 @@ public class Main {
 		list = new TestDao().querySql("select * from ORG");
 		setInput(table, list);
 
-		
-		
-		// 对toolbar的点击事件 集中进行处理
+		// set row indicator
+		table.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+//				int total = table.getItemCount();
+//				for (int i = 0; i < total; i++) {
+//					TableItem item = table.getItem(i);
+//					if (table.isSelected(i)) {
+//						item.setText(">");
+//						System.out.println(item.getBackground());
+//					} else {
+//						item.setText("");
+//					}
+//				}
+			}
+		});
+
+		// set row indicator
+//		columnModeTable.addSelectionListener(new SelectionAdapter() {
+//			@Override
+//			public void widgetSelected(SelectionEvent e) {
+//				int total = columnModeTable.getItemCount();
+//				for (int i = 0; i < total; i++) {
+//					TableItem item = columnModeTable.getItem(i);
+//					if (columnModeTable.isSelected(i)) {
+//						item.setText(">");
+//					} else {
+//						item.setText("");
+//					}
+//				}
+//			}
+//		});
+
 		Listener listener = new Listener() {
 			@Override
 			public void handleEvent(Event event) {
 				if (event.widget == add) {
-					// TableItem row = new TableItem(table, SWT.NONE,
-					// selectionIndex);
-				} else if (event.widget == viewSingleRow) {
+					// deselect current row
+					int selectionIndex = table.getSelectionIndex();
+					TableItem selectedItem = table.getSelection()[0];
+					selectedItem.setText("");
+
+					// add new row and select it
+					TableItem row = new TableItem(table, SWT.NONE,
+							selectionIndex);
+					table.setSelection(selectionIndex);
+					row.setText(">");
+				} else if (event.widget == cm) {
+
+					int selectionIndex = table.getSelectionIndex();
+
 					if (layout.topControl == table) {
-						setInput4ColumnMode(columnModeTable,getFocus().y);
+						setInput4ColumnMode(columnModeTable, selectionIndex);
 						layout.topControl = columnModeTable;
 					} else {
 						layout.topControl = table;
 					}
+
 					contentPanel.layout();
-					
-					//点一下toolbar，text的焦点就丢失了，所以
-					focusedText.setFocus();
-				} else if(event.widget == prev){
-					//查看上一行数据
-					//先将焦点上移一格
-					Point focus = getFocus();
-					//如果不是第一行才可以上移
-					if (focus.y>=2) {
-						focusedText = textArray[focus.y-1][focus.x];
-						focusedText.setFocus();
-						setInput4ColumnMode(columnModeTable,getFocus().y);
-					}
-				} else if(event.widget == next){
-					//查看下一行数据
-					//先将焦点下移一格
-					Point focus = getFocus();
-					//如果不是最后一行才可以下移，注意最后一行的y坐标是textArray.length-1
-					System.out.println(textArray.length);
-					if (focus.y < textArray.length-1) {
-						focusedText = textArray[focus.y+1][focus.x];
-						focusedText.setFocus();
-						setInput4ColumnMode(columnModeTable,getFocus().y);
-					}
+
 				}
 
 			}
 		};
 		add.addListener(SWT.Selection, listener);
-		viewSingleRow.addListener(SWT.Selection, listener);
-		prev.addListener(SWT.Selection, listener);
-		next.addListener(SWT.Selection, listener);
+		cm.addListener(SWT.Selection, listener);
 
 		viewForm.setContent(contentPanel);
 
 	}
 
-	private Point getFocus() {
-		Integer x = (Integer) focusedText.getData(COL_NUMBER);
-		Integer y = (Integer) focusedText.getData(ROW_NUMBER);
-		return new Point(x, y);
+	private String[] getColumnText(Table table, TableItem item) {
+		int count = table.getColumnCount();
+		String[] text = new String[count];
+		for (int i = 0; i < count; i++) {
+			text[i] = item.getText(i);
+		}
+		return text;
 	}
 
 	private void setInput(final Table table, final List<Row> list) {
@@ -193,13 +204,58 @@ public class Main {
 		table.removeAll();
 
 		final HeaderRow tableHeader = (HeaderRow) list.get(0);
-		int rowCount = list.size();
 		int columnCount = tableHeader.keySet().size();
-		
-		//第一行留白算了。。以便text和整个表格完全保持一致.
-		textArray = new Text[rowCount][columnCount];
 
 		// header
+
+		Listener sortListener = new Listener() {
+			public void handleEvent(Event e) {
+
+				TableItem[] items = table.getItems();
+				Collator collator = Collator.getInstance(Locale.getDefault());
+				TableColumn column = (TableColumn) e.widget;
+
+				TableColumn prevSortColumn = table.getSortColumn();
+
+				int sortDirection = SWT.UP;
+				if (column == prevSortColumn) {
+					int direction = table.getSortDirection();
+					if (direction == SWT.UP) {
+						sortDirection = SWT.DOWN;
+					} else if (direction == SWT.DOWN) {
+						sortDirection = SWT.None;
+					} else {
+						sortDirection = SWT.UP;
+					}
+				}
+
+				if (sortDirection== SWT.None) {
+					setInput(table, list, tableHeader);
+				}else{
+					int index = (Integer) column.getData();
+					for (int i = 1; i < items.length; i++) {
+						String value1 = items[i].getText(index);
+						for (int j = 0; j < i; j++) {
+							String value2 = items[j].getText(index);
+							if ((sortDirection == SWT.UP && collator.compare(value1, value2) < 0)
+									|| (sortDirection == SWT.DOWN && collator.compare(value1, value2) > 0)) {
+								String[] values = getColumnText(table, items[i]);
+								items[i].dispose();
+								TableItem item = new TableItem(table, SWT.NONE, j);
+								item.setText(values);
+								if (">".equals(item.getText())){
+									table.setSelection(item);
+								}
+								items = table.getItems();
+								break;
+							}
+						}
+					}
+				}
+				table.setSortColumn(column);
+				table.setSortDirection(sortDirection);
+			}
+		};
 		int w = 0;
 		for (String key : tableHeader.keySet()) {
 			TableColumn th = new TableColumn(table, SWT.NONE);
@@ -210,85 +266,99 @@ public class Main {
 			} else if (w == 1) {
 				th.setResizable(false);
 				th.setMoveable(false);
+			} else {
+				th.setData(w);
+				th.addListener(SWT.Selection, sortListener);
 			}
 			w++;
 		}
 
 		// row
-		for (int rowNumber = 1; rowNumber < list.size(); rowNumber++) {
-			Row row = list.get(rowNumber);
+		for (int k = 1; k < list.size(); k++) {
+			Row row = list.get(k);
 			final TableItem tableItem = new TableItem(table, SWT.NONE);
 			String[] texts = new String[columnCount];
 			row.values().toArray(texts);
 			tableItem.setText(texts);
-			if (rowNumber % 2 == 1) {
+			if (k % 2 == 1) {
 				tableItem.setBackground(getColor(COLOR_SQL_HIGHLIGHT));
 			}
 			
-			final int rrowNumber = rowNumber;
-
-			// bind text editor.
-			for (int colNumber = 0; colNumber < columnCount; colNumber++) {
+			
+			//bind text editor.
+			for (int m = 2; m < columnCount; m++) {
 				final TableEditor editor = new TableEditor(table);
-				final Text text = new Text(table, SWT.None);
-				if (rowNumber % 2 == 1) {
+				final Text text = new Text(table,SWT.None);
+				if (k % 2 == 1) {
 					text.setBackground(getColor(COLOR_SQL_HIGHLIGHT));
 				}
-				text.setText(texts[colNumber]);
-				text.setData(ROW_NUMBER, rowNumber);
-				text.setData(COL_NUMBER, colNumber);
-				textArray[rowNumber][colNumber] = text;
-
-				editor.grabHorizontal = true;
-				editor.setEditor(text, tableItem, colNumber);
-				final int mm = colNumber;
+				text.setText(texts[m]);
+				editor.grabHorizontal=true;
+				editor.setEditor(text, tableItem, m);
+				final int mm = m;
 				text.addModifyListener(new ModifyListener() {
 					@Override
 					public void modifyText(ModifyEvent e) {
-						editor.getItem().setText(mm, text.getText());
+						editor.getItem().setText(mm,text.getText());
 					}
 				});
-
+				
+				
+				final int kk = k;
 				text.addFocusListener(new FocusListener() {
+					
 					@Override
 					public void focusLost(FocusEvent e) {
 						tableItem.setText("");
-						textArray[rrowNumber][0].setText("");
 					}
-
+					
 					@Override
 					public void focusGained(FocusEvent e) {
 						tableItem.setText(">");
-						textArray[rrowNumber][0].setText(">");
-						focusedText = text;
 					}
 				});
-
-				if (rowNumber == 1 && colNumber == 2) {
+				
+				if (k==1 && m==2) {
 					text.setFocus();
 				}
 			}
-
+			
 		}
 
 		for (int j = 0; j < columnCount; j++) {
 			TableColumn c = table.getColumn(j);
 			c.pack();
-			// 留下排序图标用的位置
-			c.setWidth(c.getWidth() + SORT_ICON_WIDTH);
+			//留下排序图标用的位置
+			c.setWidth(c.getWidth()+SORT_ICON_WIDTH);
 		}
 	}
-
+	private void setInput(final Table table, final List<Row> list, HeaderRow tableHeader) {
+		// clear the old data.
+		table.remove(0, table.getItemCount()-1);
+		int columnCount = tableHeader.keySet().size();
+		// row
+		for (int k = 1; k < list.size(); k++) {
+			Row row = list.get(k);
+			TableItem tableItem = new TableItem(table, SWT.NONE);
+			String[] text = new String[columnCount];
+			row.values().toArray(text);
+			tableItem.setText(text);
+			if (k % 2 == 1) {
+				tableItem.setBackground(getColor(COLOR_SQL_HIGHLIGHT));
+			}
+		}
+	}
 	/**
 	 * 
-	 * @param rowNumber
+	 * @param rowIndex
 	 */
-	private void setInput4ColumnMode(Table columnModeTable, int rowNumber) {
+	private void setInput4ColumnMode(Table columnModeTable, int rowIndex) {
 		columnModeTable.removeAll();
 
-		Row row = list.get(rowNumber);
+		// list的第一行是header，所以这里要+1
+		Row row = list.get(rowIndex + 1);
 		// fix header is "","Rowx","Fields"
-		String[] tableHeader = new String[] { "", "Row" + (rowNumber),
+		String[] tableHeader = new String[] { "", "Row" + (rowIndex + 1),
 				"Fields" };
 		int columnCount = 3;
 		{
@@ -336,13 +406,15 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws Exception {
-		Main test = new Main();
+		CopyOfMain test = new CopyOfMain();
 		test.open();
 	}
 
 	protected void configureShell() {
 		shell.setText("Table Example");
 		shell.setImage(loadImage(LOGO));
+		// shell.setSize(500,600);
 		shell.setLayout(new FillLayout());
+		// shell.pack();
 	}
 }

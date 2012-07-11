@@ -10,6 +10,14 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 public class DbUtil {
+	public static Connection getTestConnection() throws Exception {
+		Class.forName("com.ibm.db2.jcc.DB2Driver");
+		return DriverManager
+				.getConnection(
+						"jdbc:db2://localhost:50000/SAMPLE:retrieveMessagesFromServerOnGetMessage=true;currentSchema=CYPER.YIN",
+						"CYPER.YIN", "");
+	}
+
 	public static Connection getConnection() throws Exception {
 		if (currentConnectionName != null) {
 			Class.forName("com.ibm.db2.jcc.DB2Driver");
@@ -26,7 +34,8 @@ public class DbUtil {
 			throws Exception {
 		Class.forName("com.ibm.db2.jcc.DB2Driver");
 		String url = info.toDB2String();
-		return DriverManager.getConnection(url, info.getUsername(),info.getPassword());
+		return DriverManager.getConnection(url, info.getUsername(),
+				info.getPassword());
 	}
 
 	public static void main(String[] args) {
