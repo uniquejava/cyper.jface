@@ -1,10 +1,46 @@
-bug001:
+﻿001/HI/fixed:
 先点击某个单元格，然后点击列模式，在列模式的界面随便点一下哪。
 这时切回行模式，发现选前focus的单元格失去了焦点。
 原因是在contentPanel.layout的时候 focusGained先被调用 了一次.
 所以要屏蔽掉这次focusGained掉用.
 
 
-bug002:
+002/HI/FIXED:
 当光标点在表格的线上时，文本框会失去焦点
+
+003/ME/NEW: EXISTS,LEFT OUTER, ON, CASE WHEN THEN没有高亮。
+
+
+004/HI/NEW: 查找的时候，被查出的文本如果不在当前屏，editor不能自动滚动显示。
+
+005/ME/NEW： 查找框中没有全选事件。
+
+
+006/HI/NEW 紧急需求：
+保存SQL Tab的时候tab的标题要及时变成保存的文件名
+
+
+007/HI/NEW:填充？号时允许用户选中一段文本，选中的第一行做为参数
+
+
+008/HI/NEW:FMS查员工email时，不要使用alert了，使用output文本框，方便复制结果
+641>672
+709>744
+
+
+009/LOW/NEW:SQL tab每保存一次就生成一条历史记录，SQL很宝贵，防止误操作
+
+
+010/ME/NEW:变态需求：
+实现 
+shift+enter在下一行插入空白行，并跳转到下一行行首.
+
+
+011/HI/NEW:导出select的结果成insert into这样当我把这条删除了以后，还可以再插回去。
+这样就可以无视以DONT TOUCH开头的POOL了
+
+
+
+
+
 

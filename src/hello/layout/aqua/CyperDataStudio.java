@@ -12,6 +12,7 @@ import hello.layout.aqua.action.BeautifySQLAction;
 import hello.layout.aqua.action.CommitSQLAction;
 import hello.layout.aqua.action.ExecuteSQLAction;
 import hello.layout.aqua.action.ExitAction;
+import hello.layout.aqua.action.FillPlaceHolderAction;
 import hello.layout.aqua.action.FindReplaceAction;
 import hello.layout.aqua.action.LogonAction;
 import hello.layout.aqua.action.TabNewAction;
@@ -102,6 +103,8 @@ public class CyperDataStudio extends ApplicationWindow {
 	
 	//FMS
 	private IAction queryEmployeeAction;
+	
+	private IAction fillPlaceHolderAction;
 
 	private static CyperDataStudio studio;
 
@@ -154,6 +157,7 @@ public class CyperDataStudio extends ApplicationWindow {
 		aboutAction = new AboutAction();
 		
 		queryEmployeeAction = new QueryEmployeeAction(this);
+		fillPlaceHolderAction = new FillPlaceHolderAction(this);
 
 		this.addMenuBar();
 		this.addToolBar(SWT.FLAT);
@@ -313,7 +317,7 @@ public class CyperDataStudio extends ApplicationWindow {
 	@Override
 	protected void configureShell(Shell shell) {
 		super.configureShell(shell);
-		shell.setText("PL/SQL Developer for DB2(build20120709)");
+		shell.setText("PL/SQL Developer for DB2(build20120712)");
 		shell.setImage(ImageFactory.loadImage(display, LOGO));
 		shell.setMaximized(true);
 		shell.forceActive();
@@ -354,6 +358,7 @@ public class CyperDataStudio extends ApplicationWindow {
 		toolbar.add(unindentAction);
 		toolbar.add(commentAction);
 		toolbar.add(uncommentAction);
+		toolbar.add(fillPlaceHolderAction);
 
 		return toolbar;
 	}
@@ -405,6 +410,7 @@ public class CyperDataStudio extends ApplicationWindow {
 
 		editMenu.add(new Separator());
 		editMenu.add(findReplaceAction);
+		editMenu.add(fillPlaceHolderAction);
 
 		sessionMenu.add(logonAction);
 		sessionMenu.add(new Separator());
