@@ -17,21 +17,27 @@ import static hello.layout.aqua.ImageFactory.loadImage;
 import hello.example.ktable.sort.KTableSortOnClick;
 import hello.example.ktable.sort.SortComparatorExample;
 import hello.example.ktable.util.ModelUtil;
+import hello.example.ktable.util.QueryResult;
 import hello.example.ktable.util.RefreshType;
 import hello.example.ktable.util.Row;
 import hello.layout.aqua.CyperDataStudio;
+import hello.layout.aqua.ImageFactory;
 import hello.layout.aqua.action.SelectionIndentAction;
 import hello.layout.aqua.action.SelectionUnindentAction;
 import hello.layout.aqua.sqlwindow.editor.EventManager;
 import hello.layout.aqua.sqlwindow.editor.MyDocument;
 import hello.layout.aqua.sqlwindow.editor.MySourceViewerConfiguration;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.TextViewerUndoManager;
@@ -57,10 +63,14 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
+import org.kitten.core.C;
+import org.kitten.core.util.ExcelWriter;
+import org.kitten.core.util.FileUtil;
 
 import de.kupzog.ktable.KTable;
 import de.kupzog.ktable.KTableCellDoubleClickListener;
@@ -86,18 +96,20 @@ public class SQLWindow extends CTabFolder {
 
 	public KTable getTable() {
 		int index = getSelectionIndex();
-		if (index!=-1) {
+		if (index != -1) {
 			return tableList.get(index);
 		}
 		return null;
 	}
+
 	public TextViewer getSourceViewer() {
 		int index = getSelectionIndex();
-		if (index!=-1) {
+		if (index != -1) {
 			return textViewerList.get(index);
 		}
 		return null;
 	}
+
 	public MyDocument getDocument() {
 		int index = getSelectionIndex();
 		if (index != -1) {
@@ -108,7 +120,7 @@ public class SQLWindow extends CTabFolder {
 
 	public IUndoManager getUndoManager() {
 		int index = getSelectionIndex();
-		if (index!=-1) {
+		if (index != -1) {
 			return undoManagerList.get(index);
 		}
 		return null;
@@ -121,7 +133,7 @@ public class SQLWindow extends CTabFolder {
 		tabItem.setText(title);
 		tabItem.setImage(loadImage(SQL_EDITOR));
 
-		SashForm right = new SashForm(this, SWT.VERTICAL|SWT.SMOOTH);
+		SashForm right = new SashForm(this, SWT.VERTICAL | SWT.SMOOTH);
 		right.SASH_WIDTH = 5;
 		right.setLayout(new FillLayout());
 
@@ -295,6 +307,12 @@ public class SQLWindow extends CTabFolder {
 		ToolItem next = new ToolItem(toolbar, SWT.PUSH);
 		next.setImage(loadImage(NEXT));
 
+		final ToolItem excel = new ToolItem(toolbar, SWT.PUSH);
+		excel.setImage(loadImage(ImageFactory.EXCEL));
+
+		final ToolItem sql = new ToolItem(toolbar, SWT.PUSH);
+		sql.setImage(loadImage(ImageFactory.SQL));
+
 		viewForm.setTopLeft(toolbar);
 
 		// swt table
@@ -419,10 +437,85 @@ public class SQLWindow extends CTabFolder {
 					table.setSelection(2, rowSelectoin, false);
 					updateModifiedCell(model, null);
 
-					System.out.println("origin=" + model.origin.size());
-					System.out.println("data=" + model.data.size());
-					System.out.println(model.origin);
-					System.out.println(model.data);
+				} else if (event.widget == excel) {
+					QueryResult queryResult = model.getQueryResult();
+					
+					FileDialog d = new FileDialog(table.getShell(), SWT.SAVE);
+					d.setFileName(queryResult.getTableName());
+					d.setFilterExtensions(new String[] { "*.xls" });
+					String file = d.open();
+
+					if (file != null) {
+						ExcelWriter w = new ExcelWriter();
+						w.addHead(queryResult.getTableHeaders());
+						List<String[]> data = queryResult.getData();
+						
+						for (String[] row: data) {
+							w.addRow((row));
+						}
+						try {
+							w.save(new FileOutputStream(file));
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				} else if (event.widget == sql) {
+					QueryResult queryResult = model.getQueryResult();
+
+					FileDialog d = new FileDialog(table.getShell(), SWT.SAVE);
+					d.setFileName(queryResult.getTableName());
+					d.setFilterExtensions(new String[] { "*.sql" });
+
+					String file = d.open();
+
+					StringBuffer sb = new StringBuffer();
+					if (file != null) {
+						String tableName = queryResult.getTableName();
+						String[] tableHeaders = queryResult.getTableHeaders();
+						List<Row> data = queryResult.getDataRow();
+						String[] types = queryResult.getTypes();
+						System.out.println(StringUtils.join(types,","));
+						String[] value = new String[queryResult
+								.getColumnCount() + 2];
+						String[] usefulValue = new String[queryResult
+								.getColumnCount()];
+						String[] wrappedValue = new String[usefulValue.length];
+						for (Row row : data) {
+							row.values().toArray(value);
+							usefulValue = (String[]) ArrayUtils.subarray(value,
+									2, value.length);
+							for (int i = 0; i < usefulValue.length; i++) {
+								if (types[i].indexOf("TIMESTAMP") != -1) {
+									wrappedValue[i] = "CURRENT TIMESTAMP";
+								} else {
+									if (usefulValue[i] == null){
+										wrappedValue[i] = "null";
+									} else if (types[i].indexOf("INT") != -1
+											|| types[i].indexOf("DECIMAL") != -1) {
+										wrappedValue[i] = usefulValue[i];
+									} else {
+										wrappedValue[i] = "'" + usefulValue[i]
+												+ "'";
+									}
+								}
+							}
+
+							StringBuffer line = new StringBuffer();
+							line.append("INSERT INTO " + tableName + "(");
+							line.append(StringUtils.join(tableHeaders, ","));
+							line.append(") values (");
+							//join的时候，null值会被忽略！导致出现连续多个逗号的情况.
+							line.append(StringUtils.join(wrappedValue, ","));
+							line.append(");" + C.LS);
+							sb.append(line);
+						}
+						try {
+							FileUtil.setFileContent(new File(file),
+									sb.toString(), "UTF-8");
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
 				}
 
 			}
@@ -430,6 +523,8 @@ public class SQLWindow extends CTabFolder {
 		add.addListener(SWT.Selection, listener);
 		sub.addListener(SWT.Selection, listener);
 		save.addListener(SWT.Selection, listener);
+		excel.addListener(SWT.Selection, listener);
+		sql.addListener(SWT.Selection, listener);
 
 		viewForm.setContent(contentPanel);
 
@@ -461,7 +556,7 @@ public class SQLWindow extends CTabFolder {
 		});
 
 		this.setSelection(tabItem);
-		//fix bug 打开SQL Tab时，editor没有自动获得输入焦点，还得点一下，不爽。
+		// fix bug 打开SQL Tab时，editor没有自动获得输入焦点，还得点一下，不爽。
 		text.setFocus();
 
 		return tabItem;

@@ -12,20 +12,29 @@ import hello.example.ktable.sort.SortComparatorExample;
 import hello.example.ktable.util.ModelUtil;
 import hello.example.ktable.util.RefreshType;
 import hello.example.ktable.util.Row;
+import hello.layout.aqua.ImageFactory;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ViewForm;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
+import org.kitten.core.C;
+import org.kitten.core.util.ExcelWriter;
+import org.kitten.core.util.FileUtil;
 
 import de.kupzog.ktable.KTable;
 import de.kupzog.ktable.KTableCellDoubleClickListener;
@@ -82,6 +91,12 @@ public class Main {
 		sub.setImage(loadImage(SUBTRACT));
 		final ToolItem save = new ToolItem(toolbar, SWT.PUSH);
 		save.setImage(loadImage(MYTICK));
+		
+		final ToolItem excel = new ToolItem(toolbar, SWT.PUSH);
+		excel.setImage(loadImage(ImageFactory.EXCEL));
+		
+		final ToolItem sql = new ToolItem(toolbar, SWT.PUSH);
+		sql.setImage(loadImage(ImageFactory.SQL));
 		
 		viewForm.setTopLeft(toolbar);
 
@@ -208,14 +223,70 @@ public class Main {
 					System.out.println("data=" + model.data.size());
 					System.out.println(model.origin);
 					System.out.println(model.data);
-				}
+				} else if(event.widget==excel){
+					FileDialog d = new FileDialog(table.getShell(),SWT.SAVE);
+					d.setFilterExtensions(new String[]{"*.xls"});
+					String file = d.open();
+					if (file!=null) {
+						ExcelWriter w = new ExcelWriter();
+						w.addHead(model.tableHeader);
+						List<Row> data = model.data;
+						String[] value = new String[model.tableHeader.length];
+						for(Row row: data){
+							row.values().toArray(value);
+							w.addRow((value) );
+						}
+						try {
+							w.save(new FileOutputStream(file));
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}else if(event.widget == sql){
+					FileDialog d = new FileDialog(table.getShell(),SWT.SAVE);
+					d.setFilterExtensions(new String[]{"*.sql"});
 					
+					String file = d.open();
+					
+					
+					StringBuffer sb = new StringBuffer();
+					if (file!=null) {
+						String[] header = model.tableHeader;
+						String[] usefulHeader = new String[header.length-2];
+						for (int i = 2; i < header.length; i++) {
+							usefulHeader[i-2] = header[i];
+						}
+						List<Row> data = model.data;
+						String[] value = new String[header.length];
+						String[] usefuleValue = new String[usefulHeader.length];
+						for(Row row: data){
+							row.values().toArray(value);
+							usefuleValue = (String[]) ArrayUtils.subarray(value, 2, value.length);
+							
+							StringBuffer line = new StringBuffer();
+							line.append("INSERT INTO xx (" );
+							line.append(StringUtils.join(usefulHeader,","));
+							line.append(") values ('");
+							line.append(StringUtils.join(usefuleValue,"','"));
+							line.append("');" + C.LS);
+							
+							sb.append(line);
+						}
+						try {
+							FileUtil.setFileContent(new File(file), sb.toString(),"UTF-8");
+						} catch (Exception e) {
+							e.printStackTrace();
+						}	
+					}
+				}
 
 			}
 		};
 		add.addListener(SWT.Selection, listener);
 		sub.addListener(SWT.Selection, listener);
 		save.addListener(SWT.Selection, listener);
+		excel.addListener(SWT.Selection, listener);
+		sql.addListener(SWT.Selection, listener);
 
 	}
 

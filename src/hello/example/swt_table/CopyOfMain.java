@@ -113,7 +113,7 @@ public class CopyOfMain {
 
 		layout.topControl = table;
 
-		list = new TestDao().querySql("select * from ORG");
+		list = new TestDao().query("select * from ORG").getOldDataRow();
 		setInput(table, list);
 
 		// set row indicator

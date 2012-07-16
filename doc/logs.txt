@@ -1,4 +1,17 @@
-﻿23:22 2012-7-13
+﻿0:26 2012-7-17
+可以执行update,delete,insert语句了。
+可以同时执行多条SQL
+增加了导出查询结果为SQL语句(insert into ..)的功能。
+若干usability enhancement.
+FMS:增加一键删除pool的功能
+FMS:Query Employee功能优化。
+
+10:37 2012-7-16
+周末去欢乐谷游玩一把。今天继续
+增加了导出excel的功能。
+
+
+23:22 2012-7-13
 整理bugs.txt
 今天开始爱上我的工具了，用了一天，不断的发现新需求：）
 周末任务，把git用会

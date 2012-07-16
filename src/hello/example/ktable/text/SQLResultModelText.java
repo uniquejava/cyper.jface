@@ -11,7 +11,7 @@
  */
 package hello.example.ktable.text;
 
-import hello.example.ktable.dao.MyDao;
+import hello.example.ktable.dao.TestDao;
 import hello.example.ktable.util.BlankRow;
 import hello.example.ktable.util.HeaderRow;
 import hello.example.ktable.util.Row;
@@ -96,7 +96,7 @@ public class SQLResultModelText extends KTableDefaultModel {
 	public SQLResultModelText(KTable table) throws Exception {
 		setColumnWidth(0, 20);
 		setColumnWidth(1, 40);
-		refresh(table, new MyDao().querySql("selec * from ORG"), 1);
+		refresh(table, new TestDao().query("selec * from ORG").getOldDataRow(), 1);
 	}
 
 	/**

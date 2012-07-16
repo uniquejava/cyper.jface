@@ -44,9 +44,13 @@ public class MyDocument extends Document implements IDocumentListener {
 			}
 		}
 		
+		File file = new File(fileName);
 		try {
-			FileUtil.setFileContent(new File(fileName), get(), "UTF-8");
+			FileUtil.setFileContent(file, get(), "UTF-8");
 			setDirty(false);
+			
+			//保存tab时自动修改tab页的名称为文件名 .
+			sqlWindow.getSelection().setText(file.getName());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

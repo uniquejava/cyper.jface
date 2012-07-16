@@ -16,11 +16,17 @@ import static hello.layout.aqua.ImageFactory.WYJ;
 import static hello.layout.aqua.ImageFactory.loadImage;
 import hello.example.ktable.dao.TestDao;
 import hello.example.ktable.util.HeaderRow;
+import hello.example.ktable.util.QueryResult;
 import hello.example.ktable.util.Row;
+import hello.layout.aqua.ImageFactory;
 import hello.layout.aqua.util.GridDataFactory;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.List;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.custom.TableEditor;
@@ -36,6 +42,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
@@ -44,6 +51,9 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
+import org.kitten.core.C;
+import org.kitten.core.util.ExcelWriter;
+import org.kitten.core.util.FileUtil;
 
 /**
  * (1)杜绝table.setSelection()这样的代码， selection太丑了，我们不需要selection，只需要row indicator.<br>
@@ -61,7 +71,7 @@ public class Main {
 	public static final Display display = new Display();
 	public final Shell shell = new Shell(display);
 	private ViewForm viewForm = null;
-	private List<Row> list;
+	private QueryResult queryResult;
 	private Text focusedText;
 	private Text[][] textArray = null;
 
@@ -104,6 +114,12 @@ public class Main {
 
 		final ToolItem next = new ToolItem(toolbar, SWT.PUSH);
 		next.setImage(loadImage(NEXT));
+		
+		final ToolItem excel = new ToolItem(toolbar, SWT.PUSH);
+		excel.setImage(loadImage(ImageFactory.EXCEL));
+		
+		final ToolItem sql = new ToolItem(toolbar, SWT.PUSH);
+		sql.setImage(loadImage(ImageFactory.SQL));
 
 		viewForm.setTopLeft(toolbar);
 
@@ -123,11 +139,13 @@ public class Main {
 		columnModeTable.setHeaderVisible(true);
 		columnModeTable.setLayoutData(GridDataFactory.fill_both());
 		columnModeTable.setLinesVisible(true);
-
+		
+		
 		layout.topControl = table;
 
-		list = new TestDao().querySql("select * from ORG");
-		setInput(table, list);
+		final TestDao td = new TestDao();
+		queryResult = td.query("select * from ORG");
+		setInput(table, queryResult);
 
 		// fix bug 002
 		fixTableLinesClickBug(table);
@@ -176,6 +194,59 @@ public class Main {
 						focusedText.setFocus();
 						setInput4ColumnMode(columnModeTable, getFocus().y);
 					}
+				}else if(event.widget==excel){
+					FileDialog d = new FileDialog(table.getShell(),SWT.SAVE);
+					d.setFilterExtensions(new String[]{"*.xls"});
+					String file = d.open();
+					if (file!=null) {
+						ExcelWriter w = new ExcelWriter();
+						w.addHead(queryResult.getTableHeaders());
+						List<Row> data = queryResult.getDataRow();
+						
+						
+						String[] value = new String[queryResult.getColumnCount()+2];
+						for(Row row: data){
+							row.values().toArray(value);
+							w.addRow((value) );
+						}
+						try {
+							w.save(new FileOutputStream(file));
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}else if(event.widget == sql){
+					FileDialog d = new FileDialog(table.getShell(),SWT.SAVE);
+					d.setFilterExtensions(new String[]{"*.sql"});
+					
+					String file = d.open();
+					
+					StringBuffer sb = new StringBuffer();
+					if (file!=null) {
+						String tableName = queryResult.getTableName();
+						String[] tableHeaders = queryResult.getTableHeaders();
+						List<Row> data = queryResult.getDataRow();
+						
+						String[] value = new String[queryResult.getColumnCount() +2];
+						String[] usefuleValue = new String[queryResult.getColumnCount()];
+						for(Row row: data){
+							row.values().toArray(value);
+							usefuleValue = (String[]) ArrayUtils.subarray(value, 2, value.length);
+							
+							StringBuffer line = new StringBuffer();
+							line.append("INSERT INTO "+tableName+" (" );
+							line.append(StringUtils.join(tableHeaders,","));
+							line.append(") values ('");
+							line.append(StringUtils.join(usefuleValue,"','"));
+							line.append("');" + C.LS);
+							sb.append(line);
+						}
+						try {
+							FileUtil.setFileContent(new File(file), sb.toString(),"UTF-8");
+						} catch (Exception e) {
+							e.printStackTrace();
+						}	
+					}
 				}
 
 			}
@@ -184,7 +255,9 @@ public class Main {
 		viewSingleRow.addListener(SWT.Selection, listener);
 		prev.addListener(SWT.Selection, listener);
 		next.addListener(SWT.Selection, listener);
-
+		excel.addListener(SWT.Selection, listener);
+		sql.addListener(SWT.Selection, listener);
+		
 		viewForm.setContent(contentPanel);
 
 	}
@@ -229,7 +302,9 @@ public class Main {
 		return new Point(x, y);
 	}
 
-	private void setInput(final Table table, final List<Row> list) {
+	private void setInput(final Table table, final QueryResult result) {
+		List<Row> list = result.getOldDataRow();
+		
 		if (list == null || list.size() == 0) {
 			return;
 		}
@@ -333,8 +408,8 @@ public class Main {
 	 */
 	private void setInput4ColumnMode(Table columnModeTable, int rowNumber) {
 		columnModeTable.removeAll();
-
-		Row row = list.get(rowNumber);
+		
+		Row row = queryResult.getOldDataRow().get(rowNumber);
 		// fix header is "","Rowx","Fields"
 		String[] tableHeader = new String[] { "", "Row" + (rowNumber), "Fields" };
 		int columnCount = 3;

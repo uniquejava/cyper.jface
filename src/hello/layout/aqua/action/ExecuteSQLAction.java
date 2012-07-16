@@ -1,7 +1,9 @@
 package hello.layout.aqua.action;
 
+import hello.example.ktable.dao.MyDao;
 import hello.layout.aqua.CyperDataStudio;
 import hello.layout.aqua.ImageFactory;
+import hello.layout.aqua.dialog.OopsDialog;
 import hello.layout.aqua.sqlwindow.Constants;
 import hello.layout.aqua.sqlwindow.SQLResultModel;
 import hello.layout.aqua.sqlwindow.SQLWindow;
@@ -15,7 +17,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.graphics.Point;
 import org.kitten.core.util.ErrorUtil;
 
 public class ExecuteSQLAction extends Action {
@@ -54,6 +55,35 @@ public class ExecuteSQLAction extends Action {
 				SQLResultModel model = (SQLResultModel) sw.getTable().getModel();
 				// 尝试使用用户选中的文本
 				String selectionText = text.getSelectionText().trim();
+				
+				if (selectionText.toLowerCase().startsWith("delete") || selectionText.toLowerCase().startsWith("update")|| selectionText.toLowerCase().startsWith("insert")) {
+					//执行ddl时要提示是否真的update,delete防止误操作！！！！！
+					boolean go = MessageDialog.openConfirm(studio.getShell(), Constants.PRODUCT_NAME, "are you sure?");
+					if (!go) {
+						return;
+					}
+					
+					if (selectionText.endsWith(";")) {
+						selectionText = selectionText.substring(0,selectionText.length() - 1);
+					}
+					try {
+						String[] sqls = selectionText.split(";");
+						int rowsAffected = 0;
+						if (sqls.length>1) {
+							rowsAffected = new MyDao().executeBatch(selectionText.split(";"));
+						}else{
+							rowsAffected = new MyDao().executeUpdate(sqls[0]);
+						}
+						MessageDialog.openInformation(studio.getShell(), "Congrats", rowsAffected + " row(s) affected.");
+					} catch (Exception e) {
+//						String msg = ErrorUtil.getError(e);
+						OopsDialog od = new OopsDialog(studio.getShell(), e);
+						od.open();
+					}
+					return;
+				}
+				
+				
 				// 如果没有选中任何文本，则执行光标所在的SQL
 				if (selectionText.length() == 0) {
 //					selectionText = text.getText();

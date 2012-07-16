@@ -3,6 +3,7 @@ package hello.layout.aqua.sqlwindow;
 import hello.example.ktable.dao.MyDao;
 import hello.example.ktable.util.BlankRow;
 import hello.example.ktable.util.HeaderRow;
+import hello.example.ktable.util.QueryResult;
 import hello.example.ktable.util.RefreshType;
 import hello.example.ktable.util.Row;
 
@@ -62,7 +63,7 @@ public class SQLResultModel extends KTableSortedModel {
 			TextCellRenderer.INDICATION_FOCUS);
 	public List<Row> origin = new ArrayList<Row>();
 	public List<Row> data = Collections.synchronizedList(new ArrayList<Row>());
-
+	private QueryResult queryResult;
 	// col + "/" + row
 	// 观察列表，处于观察列表上的cell，在”失去焦点“时要检查数据是否有修改
 	// 现在无法捕获”失去焦点“的事件，所以这个检查工作放在其它控件单击的时候
@@ -70,6 +71,13 @@ public class SQLResultModel extends KTableSortedModel {
 			.synchronizedSet(new HashSet<String>());
 
 	private KTable table;
+	
+	
+	
+	public QueryResult getQueryResult() {
+		return queryResult;
+	}
+
 	/**
 	 * Initialize the base implementation.
 	 */
@@ -79,8 +87,8 @@ public class SQLResultModel extends KTableSortedModel {
 	}
 	
 	public void executeSQL(String sql) throws Exception{
-		
-		List<Row> list = new MyDao().querySql(sql);
+		queryResult = new MyDao().query(sql);
+		List<Row> list = queryResult.getOldDataRow();
 		refreshWithSort(list, 1, RefreshType.INIT);
 	}
 

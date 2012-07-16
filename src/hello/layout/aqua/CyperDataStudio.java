@@ -6,6 +6,7 @@ import static hello.layout.aqua.ImageFactory.SERVER;
 import static hello.layout.aqua.util.GridDataFactory.gd4text;
 import hello.cache.TableCache;
 import hello.filter.TableFilter;
+import hello.fms.action.DeletePoolAction;
 import hello.fms.action.QueryEmployeeAction;
 import hello.layout.aqua.action.AboutAction;
 import hello.layout.aqua.action.BeautifySQLAction;
@@ -103,6 +104,7 @@ public class CyperDataStudio extends ApplicationWindow {
 	
 	//FMS
 	private IAction queryEmployeeAction;
+	private IAction deletePoolAction;
 	
 	private IAction fillPlaceHolderAction;
 
@@ -157,6 +159,7 @@ public class CyperDataStudio extends ApplicationWindow {
 		aboutAction = new AboutAction();
 		
 		queryEmployeeAction = new QueryEmployeeAction(this);
+		deletePoolAction = new DeletePoolAction(this);
 		fillPlaceHolderAction = new FillPlaceHolderAction(this);
 
 		this.addMenuBar();
@@ -317,7 +320,7 @@ public class CyperDataStudio extends ApplicationWindow {
 	@Override
 	protected void configureShell(Shell shell) {
 		super.configureShell(shell);
-		shell.setText("PL/SQL Developer for DB2(build20120712)");
+		shell.setText("PL/SQL Developer for DB2(build20120716)");
 		shell.setImage(ImageFactory.loadImage(display, LOGO));
 		shell.setMaximized(true);
 		shell.forceActive();
@@ -423,6 +426,7 @@ public class CyperDataStudio extends ApplicationWindow {
 		helpMenu.add(aboutAction);
 		
 		fmsMenu.add(queryEmployeeAction);
+		fmsMenu.add(deletePoolAction);
 		
 		
 		

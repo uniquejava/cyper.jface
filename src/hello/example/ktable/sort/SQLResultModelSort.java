@@ -8,7 +8,7 @@
  */
 package hello.example.ktable.sort;
 
-import hello.example.ktable.dao.MyDao;
+import hello.example.ktable.dao.TestDao;
 import hello.example.ktable.util.HeaderRow;
 import hello.example.ktable.util.Row;
 
@@ -63,7 +63,7 @@ public class SQLResultModelSort extends KTableSortedModel {
 	public SQLResultModelSort() throws Exception {
 		setColumnWidth(0, 20);
 		setColumnWidth(1, 40);
-		list = new MyDao().querySql("select * from ORG");
+		list = new TestDao().query("select * from ORG").getOldDataRow();
 		this.resultCount = list.size() - 1;
 		for (int i = 0; i < list.size(); i++) {
 			Map row = list.get(i);

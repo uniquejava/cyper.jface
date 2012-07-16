@@ -1,6 +1,6 @@
 package hello.example.ktable;
 
-import hello.example.ktable.dao.MyDao;
+import hello.example.ktable.dao.TestDao;
 import hello.example.ktable.util.BlankRow;
 import hello.example.ktable.util.HeaderRow;
 import hello.example.ktable.util.RefreshType;
@@ -28,12 +28,6 @@ import de.kupzog.ktable.KTableSortedModel;
 import de.kupzog.ktable.editors.KTableCellEditorText;
 import de.kupzog.ktable.renderers.FixedCellRenderer;
 import de.kupzog.ktable.renderers.TextCellRenderer;
-
-/**
- * 
- * @author cyper.yin
- * 
- */
 public class SQLResultModel extends KTableSortedModel {
 
 	// 上面的表头行数
@@ -82,7 +76,7 @@ public class SQLResultModel extends KTableSortedModel {
 	}
 	
 	public void executeSQL(String sql) throws Exception{
-		List<Row> list = new MyDao().querySql(sql);
+		List<Row> list = new TestDao().query(sql).getOldDataRow();
 		refreshWithSort(list, 1, RefreshType.INIT);
 	}
 

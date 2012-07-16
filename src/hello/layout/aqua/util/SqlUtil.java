@@ -10,6 +10,23 @@ import org.eclipse.swt.graphics.Point;
 import org.kitten.core.util.StringUtil;
 
 public class SqlUtil {
+	public static String getTableName(String sql) {
+		sql = sql.trim().toUpperCase();
+		int fromIndex = sql.indexOf("FROM");
+		if (fromIndex == -1) {
+			return null;
+		}
+
+		int whereIndex = sql.indexOf("WHERE");
+		if (whereIndex == -1) {
+			whereIndex = sql.length();
+		}
+
+		String tablePart = sql.substring(fromIndex + 4, whereIndex).trim();
+		tablePart = tablePart.replaceAll("\\s{2,}", " ");
+		return tablePart.split(" ")[0];
+	}
+
 	public static Map<String, String> getAliasMapping(String sql) {
 		System.out.println(sql);
 
@@ -20,33 +37,35 @@ public class SqlUtil {
 		}
 
 		sql = sql.trim().toUpperCase();
-		int fromIndex = sql.indexOf("FROM");
 
-		if (fromIndex == -1) {
-			return aliasMapping;
+		if (sql.startsWith("SELECT") || sql.startsWith("DELETE")) {
+			aliasInSelect(sql, aliasMapping);
+		} else if (sql.startsWith("UPDATE")) {
+			aliasInUpdate(sql, aliasMapping);
 		}
+		return aliasMapping;
+	}
 
-		int whereIndex = sql.indexOf("WHERE");
-		if (whereIndex == -1) {
-			whereIndex = sql.length();
+	private static void aliasInUpdate(String sql,
+			Map<String, String> aliasMapping) {
+		int setIndex = sql.indexOf("SET");
+		if (setIndex == -1) {
+			setIndex = sql.length();
 		}
-		String tablePart = sql.substring(fromIndex + 4, whereIndex).trim();
+		String tablePart = sql.substring("UPDATE".length(), setIndex).trim();
 		// 去掉AS
 		tablePart = tablePart.replaceAll(" AS ", " ");
 		// 去掉多余的空格
 		tablePart = tablePart.replaceAll("\\s{2,}", " ");
-		System.out.println("tablePart=" + tablePart);
 		// ZHANG_S Z, LISHI L,WANGWU
 		// 拆分
 		String[] tables = tablePart.split(",");
-
 		for (int i = 0; i < tables.length; i++) {
 			String str = tables[i].trim();
 			int space = str.indexOf(" ");
 			if (space != -1) {
 				String alias = str.substring(space + 1);
 				String table = str.substring(0, space);
-
 				// 如果表名前有schema，去掉schema
 				if (table.indexOf(".") != -1) {
 					table = table.substring(table.indexOf(".") + 1);
@@ -54,13 +73,46 @@ public class SqlUtil {
 				aliasMapping.put(alias, table);
 			}
 		}
+	}
 
-		return aliasMapping;
+	private static void aliasInSelect(String sql,
+			Map<String, String> aliasMapping) {
+		int fromIndex = sql.indexOf("FROM");
+		if (fromIndex != -1) {
+			int whereIndex = sql.indexOf("WHERE");
+			if (whereIndex == -1) {
+				whereIndex = sql.length();
+			}
+			String tablePart = sql.substring(fromIndex + 4, whereIndex).trim();
+			// 去掉AS
+			tablePart = tablePart.replaceAll(" AS ", " ");
+			// 去掉多余的空格
+			tablePart = tablePart.replaceAll("\\s{2,}", " ");
+			System.out.println("tablePart=" + tablePart);
+			// ZHANG_S Z, LISHI L,WANGWU
+			// 拆分
+			String[] tables = tablePart.split(",");
+
+			for (int i = 0; i < tables.length; i++) {
+				String str = tables[i].trim();
+				int space = str.indexOf(" ");
+				if (space != -1) {
+					String alias = str.substring(space + 1);
+					String table = str.substring(0, space);
+
+					// 如果表名前有schema，去掉schema
+					if (table.indexOf(".") != -1) {
+						table = table.substring(table.indexOf(".") + 1);
+					}
+					aliasMapping.put(alias, table);
+				}
+			}
+		}
 	}
 
 	public static void main(String[] args) {
 		// 没有where的情况
-		String sql = "select p. from Person p";
+		String sql = "select p.x from Person p";
 
 		// 有where的情况
 		// String sql =
@@ -68,6 +120,8 @@ public class SqlUtil {
 		Map<String, String> map = SqlUtil.getAliasMapping(sql);
 		System.out.println(map.keySet());
 		System.out.println(map.get("L"));
+
+		System.out.println(SqlUtil.getTableName(sql));
 	}
 
 	public static String getSqlBeforeCursor(StyledText text) {
@@ -96,8 +150,8 @@ public class SqlUtil {
 			// 先后找SQL的结尾（就是当前行行尾)
 			int lineEndOffset = getLineEndOffset(text, currentLineNumber);
 
-			//注意-1的含义，深入体会HelloLineOffset.java
-			selectionText = text.getText(startLineOffset, lineEndOffset-1);
+			// 注意-1的含义，深入体会HelloLineOffset.java
+			selectionText = text.getText(startLineOffset, lineEndOffset - 1);
 
 		} else if (currentLineText.length() == 0) {
 			// 光标所在的行是空白行,什么也不做.
@@ -109,7 +163,7 @@ public class SqlUtil {
 			int startLineOffset = getStartLineOffset(text, currentLineNumber);
 			// 向后找 SQL的结尾
 			int endLineOffset = getEndLineOffset(text, currentLineNumber);
-			
+
 			System.out.println("startLineOffset=" + startLineOffset);
 			System.out.println("endLineOffset=" + endLineOffset);
 
@@ -142,7 +196,7 @@ public class SqlUtil {
 		if (result >= lineCount - 1) {
 			result = lineCount;
 		} else {
-			while (result < lineCount-1) {
+			while (result < lineCount - 1) {
 				result = result + 1;
 				String nextLineText = text.getLine(result).trim();
 				System.out.println("nextLine=[" + nextLineText + "]");
@@ -171,10 +225,12 @@ public class SqlUtil {
 		System.out.println("foundEndLine=" + result);
 		// 在下面的情况下，会报异常，因此NND要注意传入的result的范围
 		// lineIndex < 0 || lineIndex > 0 && lineIndex >= content.getLineCount()
-		
-		//请看HelloLineOffset的例子
+
+		// 请看HelloLineOffset的例子
 		if (result == lineCount) {
-			return text.getOffsetAtLine(result-1) + text.getLine(result-1).length() + text.getLineDelimiter().length();
+			return text.getOffsetAtLine(result - 1)
+					+ text.getLine(result - 1).length()
+					+ text.getLineDelimiter().length();
 		} else {
 			return text.getOffsetAtLine(result);
 		}

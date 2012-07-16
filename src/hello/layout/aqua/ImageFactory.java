@@ -55,6 +55,10 @@ public class ImageFactory {
 	public final static String COLUMN_MODE = "column_mode_1616.gif";
 	public final static String PREV = "up_1616.gif";
 	public final static String NEXT = "down_1616.gif";
+	public final static String EXCEL = "excel.gif";
+	public final static String SQL = "sql.gif";
+	
+	
 	public final static String ROW_INDICATOR = "row_indicator.gif";
 	public final static String TABLE = "table_1818.gif";
 	public final static String CLOSED_FOLDER = "directory.gif";
@@ -62,6 +66,7 @@ public class ImageFactory {
 	
 	public final static String METHOD = "method.gif";
 	public final static String QUESTION = "question.gif";
+	public final static String ERROR = "error.png";
 	
 	
 
