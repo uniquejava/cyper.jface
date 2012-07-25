@@ -320,7 +320,7 @@ public class CyperDataStudio extends ApplicationWindow {
 	@Override
 	protected void configureShell(Shell shell) {
 		super.configureShell(shell);
-		shell.setText("PL/SQL Developer for DB2(build20120716)");
+		shell.setText("PL/SQL Developer for DB2(build20120725)");
 		shell.setImage(ImageFactory.loadImage(display, LOGO));
 		shell.setMaximized(true);
 		shell.forceActive();

@@ -2,11 +2,15 @@ package hello.layout.aqua.util;
 
 import hello.layout.aqua.sqlwindow.Constants;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Point;
+import org.kitten.core.util.FileUtil;
 import org.kitten.core.util.StringUtil;
 
 public class SqlUtil {
@@ -110,7 +114,8 @@ public class SqlUtil {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
+		/*
 		// 没有where的情况
 		String sql = "select p.x from Person p";
 
@@ -122,6 +127,13 @@ public class SqlUtil {
 		System.out.println(map.get("L"));
 
 		System.out.println(SqlUtil.getTableName(sql));
+		**/
+		//test removeCommentsFromSql
+		String input = FileUtil.getFileContent(new File("c:/test.txt"), "UTF-8");
+		System.out.println(SqlUtil.removeCommentsFromSql(input));
+		
+		
+		
 	}
 
 	public static String getSqlBeforeCursor(StyledText text) {
@@ -134,6 +146,25 @@ public class SqlUtil {
 		return selectionText;
 	}
 
+	/**
+	 * 从SQL语句中移除以--开头的注释，以及/* *\/包裹的注释
+	 * @param sql
+	 * @return
+	 */
+	public static String removeCommentsFromSql(String sql){
+		//移除单行注释 --
+		Pattern single = Pattern.compile("--.*$",Pattern.MULTILINE);
+		Matcher m1 = single.matcher(sql);
+		sql = m1.replaceAll("");
+		
+		
+		//移除多行注释
+		Pattern multi = Pattern.compile("/\\*[^\\*/]*\\*/",Pattern.DOTALL);
+		Matcher m2 = multi.matcher(sql);
+		return m2.replaceAll("").trim();
+	}
+	
+	
 	public static String getWholeSqlBlock(StyledText text) {
 		String selectionText;
 		// 如果有多个SQL,则只执行光标所在行的SQL
@@ -212,10 +243,15 @@ public class SqlUtil {
 							break;
 						}
 					}
-					if (nextLineText.startsWith("--")
-							|| nextLineText.startsWith("/*")
-							|| nextLineText.endsWith("*/")
-							|| nextLineText.endsWith(";")) {
+					
+					//如果SQL中混有注释,这些if条件就是错误的
+//					if (nextLineText.startsWith("--")
+//							|| nextLineText.startsWith("/*")
+//							|| nextLineText.endsWith("*/")
+//							|| nextLineText.endsWith(";")) {
+//						break;
+//					}
+					if (nextLineText.endsWith(";")) {
 						break;
 					}
 				}
@@ -256,8 +292,11 @@ public class SqlUtil {
 					break;
 				}
 			}
-			if (prevLine.startsWith("--") || prevLine.startsWith("/*")
-					|| prevLine.endsWith("*/") || prevLine.endsWith(";")) {
+			
+			//如果SQL中混有注释,这些if条件就是错误的
+//			if (prevLine.startsWith("--") || prevLine.startsWith("/*")
+//					|| prevLine.endsWith("*/") || prevLine.endsWith(";")) {
+				if (prevLine.endsWith(";")) {
 				break;
 			}
 

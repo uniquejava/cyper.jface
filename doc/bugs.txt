@@ -40,6 +40,27 @@ shift+enter在下一行插入空白行，并跳转到下一行行首.
 这样就可以无视以DONT TOUCH开头的POOL了
 
 
+大bug,程序中把多个空格转成一个空格了。。
+update FMSV1_O_POOL_EE_ASSESS t set t.POOL_SUG_ASSESSMENT_AMT='   ', 
+t.LAST_UPT_TIME= CURRENT TIMESTAMP 
+ where t.POOL_ID=456 and t.ACCT_QUARTER='Q2' and t.EE_PLAN_APSK=23733;
+(2)执行这段SQL没有任何更新成功的提示！！！
+(3)SQL执行时间目前没有显示。
+
+
+什么破软件，这都不能提示
+select distinct x.  from FMSV1_O_DELEGATE x;
+
+distinct也不提示。
+
+ctrl+shift+w关闭所有的tab
+ctrl+shift+t仿Firefox的快捷键=打开先前关闭的tab
+
+
+根据email反向去查serial no和country
+
+
+
 
 
 
