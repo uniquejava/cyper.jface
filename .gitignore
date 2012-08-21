@@ -1,6 +1,8 @@
 *.class
 Thumbs.db
 connections.xml
+/lib
+/source
 /bin
 /cache_dir
 /config
